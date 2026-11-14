@@ -3,7 +3,7 @@
 <head>
 <meta charset="UTF-8">
 <meta name="viewport" content="width=device-width, initial-scale=1">
-<title>TEDxLerici Project Hub 2027</title>
+<title>TEDxLerici HUB</title>
 <link href="https://fonts.googleapis.com/css2?family=DM+Sans:wght@400;500;600;700&display=swap" rel="stylesheet">
 <script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2"></script>
 <script>
@@ -90,6 +90,8 @@ h3{font-size:15px}
 .row2{display:grid;grid-template-columns:1fr 1fr;gap:10px}
 .actions{display:flex;gap:10px;justify-content:flex-end;margin-top:18px;align-items:center}
 .cm{background:#f6f6f6;border-radius:10px;padding:10px;margin-bottom:8px;font-size:13px}.cm small{color:var(--muted)}
+.cmx{display:flex;gap:14px;align-items:center;margin-top:6px;font-size:12px}.cmx button:not(.btn){color:var(--muted);font-weight:600}.cmx button.del{color:var(--red)}
+.pick{border:1px solid var(--line);border-radius:10px;padding:4px 12px;max-height:150px;overflow:auto;background:#fff}.pick label{display:flex;gap:8px;align-items:center;padding:5px 0;font-size:13px;color:var(--ink);cursor:pointer}.pick input{width:auto;padding:0;accent-color:#111}
 .lock{font-size:12px;color:#555;background:#f6f6f6;border-radius:10px;padding:10px 12px;margin-bottom:14px}
 .info{font-size:12px;color:#1f5fb8;background:#e8f1fd;border-radius:10px;padding:10px 12px;margin-bottom:14px}
 .login{min-height:100vh;display:grid;place-items:center;background:radial-gradient(circle at 20% 0,#fdecea,transparent 50%),var(--bg);padding:20px}
@@ -145,7 +147,7 @@ users:[
 {id:'u8',name:'Ospite',ini:'OS',email:'ospite@tedxlerici.com',role:'guest',team:null}],
 /* team = team che esegue; req = team che ha richiesto (se esterno); own = persona assegnata (null = da assegnare) */
 tasks:[
-{id:1,t:'Definizione tema 2027',team:'SP',req:null,own:'u1',s:'2027-01-11',e:'2027-02-19',p:100,dep:null,c:[]},
+{id:1,t:'Definizione tema',team:'SP',req:null,own:'u1',s:'2027-01-11',e:'2027-02-19',p:100,dep:null,c:[]},
 {id:2,t:'Prospect sponsor e proposta',team:'OP',req:null,own:'u3',s:'2027-01-18',e:'2027-04-30',p:58,dep:null,c:[]},
 {id:3,t:'Conferma venue e permessi',team:'PA',req:null,own:'u4',s:'2027-01-25',e:'2027-03-12',p:82,dep:1,c:[]},
 {id:4,t:'Identità visiva e key visual',team:'MK',req:null,own:'u6',s:'2027-02-08',e:'2027-04-02',p:76,dep:1,c:[{u:'u0',x:'Bozze key visual approvate, procediamo con le declinazioni.'}]},
@@ -157,14 +159,14 @@ tasks:[
 {id:11,t:'Logo sponsor in alta risoluzione',team:'OP',req:'MK',own:null,s:'2027-03-01',e:'2027-03-26',p:0,dep:null,c:[]},
 {id:9,t:'Prove generali e show day',team:'PA',req:null,own:'u4',s:'2027-10-18',e:'2027-10-23',p:0,dep:6,c:[]}],
 events:[
-{id:1,t:'Kick-off crew 2027',d:iso(new Date(TODAY.getFullYear(),TODAY.getMonth(),TODAY.getDate()+5)),h:'19:00',where:'Sala Consiliare, Lerici',team:null,desc:'Presentazione tema e team.'},
+{id:1,t:'Kick-off crew',d:iso(new Date(TODAY.getFullYear(),TODAY.getMonth(),TODAY.getDate()+5)),h:'19:00',where:'Sala Consiliare, Lerici',team:null,desc:'Presentazione tema e team.'},
 {id:2,t:'Riunione Marketing',d:iso(new Date(TODAY.getFullYear(),TODAY.getMonth(),TODAY.getDate()+2)),h:'18:30',where:'Online (Meet)',team:'MK',desc:''},
 {id:3,t:'Sopralluogo venue',d:iso(new Date(TODAY.getFullYear(),TODAY.getMonth(),TODAY.getDate()+9)),h:'10:00',where:'Castello di Lerici',team:'PA',desc:''},
 {id:4,t:'Scadenza call speaker',d:iso(new Date(TODAY.getFullYear(),TODAY.getMonth()+1,15)),h:'23:59',where:'',team:'SP',desc:''},
-{id:5,t:'TEDxLerici 2027',d:'2027-10-23',h:'09:30',where:'Lerici',team:null,desc:'Giornata dell\'evento.'}],
+{id:5,t:'TEDxLerici',d:'2027-10-23',h:'09:30',where:'Lerici',team:null,desc:'Giornata dell\'evento.'}],
 folders:['Generale','Brand & Grafica','Contratti','Speaker','Verbali'],
 files:[
-{id:1,n:'Brand guidelines TEDx 2027.pdf',f:'Brand & Grafica',team:null,by:'u6',d:'2026-11-02',sz:'4,2 MB'},
+{id:1,n:'Brand guidelines TEDx.pdf',f:'Brand & Grafica',team:null,by:'u6',d:'2026-11-02',sz:'4,2 MB'},
 {id:2,n:'Budget preliminare.xlsx',f:'Generale',team:'OP',by:'u3',d:'2026-11-05',sz:'88 KB'},
 {id:3,n:'Template contratto sponsor.docx',f:'Contratti',team:'OP',by:'u3',d:'2026-10-28',sz:'120 KB'},
 {id:4,n:'Shortlist speaker.xlsx',f:'Speaker',team:'SP',by:'u1',d:'2026-11-09',sz:'45 KB'},
@@ -176,11 +178,11 @@ notes:[
 {id:3,team:'SP',by:'u1',x:'Aggiornamento shortlist: 14 candidati, servono 8',mt:1,d:'2026-11-09'},
 {id:4,team:'OP',by:'u3',x:'Due sponsor in trattativa, serve kit presentazione aggiornato',mt:1,d:'2026-11-12'},
 {id:5,team:'PA',by:'u4',x:'Disponibilità castello da confermare entro dicembre',mt:null,d:'2026-11-08'}],
-meetings:[{id:1,t:'Kick-off crew 2027',ev:1,teams:['MK','OP','PA','SP'],fixed:['Benvenuto e presentazione tema 2027'],order:[]}]
+meetings:[{id:1,t:'Kick-off crew',ev:1,teams:['MK','OP','PA','SP'],fixed:['Benvenuto e presentazione del tema'],order:[]}]
 };
 const CLOUD=!!(CFG.url&&CFG.key&&window.supabase);
 const sb=CLOUD?supabase.createClient(CFG.url,CFG.key):null;
-let S, last=null, loading=CLOUD, bootErr='';
+let S, last=null, loading=CLOUD, bootErr='', HAS_ASG=true;
 if(CLOUD)S={users:[],tasks:[],events:[],files:[],notes:[],meetings:[],folders:[]};
 else{try{S=JSON.parse(localStorage.getItem('tedxl2'))}catch(e){} if(!S||!S.meetings)S=JSON.parse(JSON.stringify(seed));}
 let me=null, view='overview', filt={MK:1,OP:1,PA:1,SP:1}, q='', modal=null, scale='m', auth={step:1}, calM=new Date(TODAY.getFullYear(),TODAY.getMonth(),1), folder='Tutti', taskTab='mine', selMeeting=null;
@@ -197,7 +199,7 @@ async function load(){
  const [p,...rest]=res;S.users=p.data;
  TABLES.forEach((t,i)=>S[t]=rest[i].data);
  S.folders=rest[TABLES.length].data.map(x=>x.name).sort();
- S.tasks.forEach(t=>t.c=t.c||[]);S.meetings.forEach(m=>{m.fixed=m.fixed||[];m.teams=m.teams||[]});
+ HAS_ASG=!S.tasks.length||'asg' in S.tasks[0];S.tasks.forEach(t=>{t.c=t.c||[];t.asg=t.asg||[]});S.meetings.forEach(m=>{m.fixed=m.fixed||[];m.teams=m.teams||[]});
  last=clone(S);
 }
 async function boot(){
@@ -212,7 +214,7 @@ async function boot(){
 let syncing=Promise.resolve();
 function sync(){syncing=syncing.then(doSync);return syncing}
 async function doSync(){
- const errs=[];const strip=(t,o)=>{if(t==='tasks'){const {c,...r}=o;return r}return o};
+ const errs=[];const strip=(t,o)=>{if(t==='tasks'){const {c,...r}=o;if(!HAS_ASG)delete r.asg;return r}return o};
  for(const t of TABLES){
   const old=new Map(last[t].map(o=>[o.id,JSON.stringify(strip(t,o))])),now=new Map(S[t].map(o=>[o.id,o]));
   const up=S[t].filter(o=>old.get(o.id)!==JSON.stringify(strip(t,o))).map(o=>strip(t,o));
@@ -253,6 +255,8 @@ const can={
  take:t=>!t.own&&inTeam(t.team)&&me.role==='member',
  del:t=>isSA()||isLead(t.team)||(t.req&&isLead(t.req)&&!t.own),
  comment:()=>me.role!=='guest',
+ editC:c=>c.u===me.id,
+ delC:c=>c.u===me.id||isSA(),
  users:()=>isSA(),
  manageTeam:k=>isSA()||isLead(k),
  event:e=>isSA()||(e?(e.team&&isLead(e.team)):me.role==='lead'),
@@ -265,6 +269,11 @@ const av=(u,team,cls='')=>{const T=TEAMS[team||u.team]||{c:'#666',bg:'#eee'};ret
 const roleTag=r=>`<span class="role" style="background:${ROLES[r].bg};color:${ROLES[r].c}">${ROLES[r].l}</span>`;
 const teamChip=k=>k?`<span class="chip" style="background:${TEAMS[k].bg};color:${TEAMS[k].c}"><span class="dot" style="background:${TEAMS[k].c}"></span>${TEAMS[k].name}</span>`:`<span class="chip" style="background:#f0f0f0;color:#444">Tutta la crew</span>`;
 const inbox=()=>S.tasks.filter(t=>!t.own&&(isSA()||isLead(t.team))).length;
+/* stato derivato dalle date (nessuna percentuale) */
+const taskState=t=>{const n=iso(TODAY);return t.e<n?{k:'end',l:'Terminata',c:'#555',bg:'#eee'}:t.s>n?{k:'soon',l:'Da iniziare',c:'#1f5fb8',bg:'#e8f1fd'}:{k:'run',l:'In corso',c:'#1f7a5c',bg:'#e3f3ec'}};
+const stChip=t=>{const s=taskState(t);return `<span class="chip" style="background:${s.bg};color:${s.c}">${s.l}</span>`};
+/* owner o una delle altre persone coinvolte */
+const isMine=t=>t.own===me.id||(t.asg||[]).includes(me.id);
 
 /* ================= RENDER ================= */
 function render(){
@@ -274,7 +283,7 @@ function render(){
  const nav=[['overview','◫','Panoramica'],['timeline','☰','Timeline'],['tasks','✓','Task',inbox()],['calendar','▦','Calendario'],['files','🗀','File'],['meetings','◉','Meeting e OdG'],['team','👥','Team']];
  const V={overview,timeline,tasks:tasksView,calendar:calView,files:filesView,meetings:meetView,team:teamView,admin:adminView}[view];
  R.innerHTML=`<div class="app"><aside>
- <div class="logo"><div class="x">X</div><div><b>TED<span>x</span>Lerici</b><small>PROJECT HUB · 2027</small></div></div>
+ <div class="logo"><div class="x">X</div><div><b>TED<span>x</span>Lerici</b><small>HUB</small></div></div>
  <div class="nav">${nav.filter(n=>me.role!=='guest'||!['tasks','meetings'].includes(n[0])).map(([k,i,l,b])=>`<button class="${view===k?'on':''}" onclick="go('${k}')"><span class="ic">${i}</span>${l}${b?`<span class="badge">${b}</span>`:''}</button>`).join('')}
  ${can.users()?`<div class="navsec">AMMINISTRAZIONE</div><button class="${view==='admin'?'on':''}" onclick="go('admin')"><span class="ic">⚙</span>Utenti e permessi</button>`:''}</div>
  ${view==='timeline'?`<div class="sec"><span>FILTRA TEAM</span><span>${Object.values(filt).filter(Boolean).length}/4</span></div>
@@ -285,7 +294,7 @@ function render(){
 
 /* ---------- LOGIN (email + password + OTP) ---------- */
 function loginView(){
- const logo=`<div class="logo"><div class="x">X</div><div><b>TED<span>x</span>Lerici</b><small>PROJECT HUB · 2027</small></div></div>`;
+ const logo=`<div class="logo"><div class="x">X</div><div><b>TED<span>x</span>Lerici</b><small>HUB</small></div></div>`;
  if(CLOUD)return `<div class="login"><div class="card">${logo}
  <h1 style="font-size:24px">${auth.reg?'Crea il tuo account':'Accedi'}</h1><p style="color:var(--muted);margin:6px 0 20px">Area riservata alla crew di TEDxLerici.</p>
  ${bootErr?`<div class="lock" style="color:var(--red)">${esc(bootErr)}</div>`:''}
@@ -337,20 +346,20 @@ async function dl(id){const f=S.files.find(x=>x.id===id);if(!f.url)return alert(
  const r=await sb.storage.from('files').createSignedUrl(f.url.slice(3),300);if(r.error)return alert('Accesso negato: '+r.error.message);window.open(r.data.signedUrl)}
 
 /* ---------- comuni ---------- */
-function stats(){const n=S.tasks.length,d=S.tasks.filter(t=>t.p>=100).length,avg=n?Math.round(S.tasks.reduce((a,t)=>a+t.p,0)/n):0;
- return `<div class="card stats"><div class="s"><b>${n}</b>Task totali</div><div class="s"><b>${d}</b>Completate</div><div class="prog">Avanzamento progetto <span style="float:right;color:var(--ink);font-weight:600">${avg}%</span><div class="bar"><i style="width:${avg}%"></i></div></div><div class="ev">EVENTO<b>23 OTT 2027</b></div></div>`}
-const header=(crumb,title,btn='')=>`<div class="crumb">TEDxLerici 2027 / ${crumb}</div><div class="head"><h1>${title}</h1><div style="display:flex;gap:8px">${btn}</div></div>`;
+function stats(){const n=S.tasks.length,run=S.tasks.filter(t=>taskState(t).k==='run').length,t7=iso(new Date(TODAY.getTime()+7*864e5)),soon=S.tasks.filter(t=>t.e>=iso(TODAY)&&t.e<=t7).length;
+ return `<div class="card stats"><div class="s"><b>${n}</b>Task totali</div><div class="s"><b>${run}</b>In corso</div><div class="s"><b>${soon}</b>In scadenza (7 giorni)</div><div class="ev" style="margin-left:auto">EVENTO<b>23 OTT 2027</b></div></div>`}
+const header=(crumb,title,btn='')=>`<div class="crumb">TEDxLerici HUB / ${crumb}</div><div class="head"><h1>${title}</h1><div style="display:flex;gap:8px">${btn}</div></div>`;
 const newTaskBtn=()=>can.create()?`<button class="btn" onclick="openTask()">+ Nuova task</button>`:'';
-function taskRow(t){const T=TEAMS[t.team],o=U(t.own);
- return `<div class="row" style="border-left-color:${T.c}" onclick="openTask(${t.id})">${t.own?av(o,t.team):`<div class="av" style="border:1.5px dashed ${T.c};color:${T.c}">?</div>`}
+function taskRow(t){const T=TEAMS[t.team],o=U(t.own),co=(t.asg||[]).filter(id=>S.users.some(u=>u.id===id));
+ return `<div class="row" style="border-left-color:${T.c}" onclick="openTask(${t.id})"><div style="display:flex;align-items:center;gap:5px;flex-shrink:0">${t.own?av(o,t.team):`<div class="av" style="border:1.5px dashed ${T.c};color:${T.c}">?</div>`}${co.length?`<span title="${esc(co.map(id=>U(id).name).join(', '))}" style="color:var(--muted);font-size:11px;font-weight:600">+${co.length}</span>`:''}</div>
  <div class="tt"><b>${esc(t.t)}</b><small>${T.name}${t.req?` · richiesta da ${TEAMS[t.req].name}`:''} · ${fmt(t.s)} — ${fmt(t.e)}</small></div>
  ${!t.own?`<span class="chip" style="background:#fff4d6;color:#8a6200">Da assegnare</span>`:''}
- <div class="pc">${t.p}%<div class="bar"><i style="width:${t.p}%;background:${T.c}"></i></div></div><span style="color:var(--muted);font-size:12px">💬${t.c.length||''}</span></div>`}
+ ${stChip(t)}<span style="color:var(--muted);font-size:12px">💬${t.c.length||''}</span></div>`}
 
 /* ---------- PANORAMICA ---------- */
 function overview(){const days=Math.ceil((EVENT-TODAY)/864e5);
  const up=S.events.filter(e=>e.d>=iso(TODAY)).sort((a,b)=>a.d.localeCompare(b.d)).slice(0,4);
- const mine=me.role==='guest'?[]:S.tasks.filter(t=>t.own===me.id&&t.p<100);
+ const mine=me.role==='guest'?[]:S.tasks.filter(t=>isMine(t)&&t.e>=iso(TODAY));
  const ib=S.tasks.filter(t=>!t.own&&(isSA()||isLead(t.team)));
  return header('Panoramica',`Ciao ${esc(me.name.split(' ')[0])}`,newTaskBtn())+stats()+`<div class="grid" style="margin-bottom:20px">
  <div class="card pad kpi"><small>Giorni all'evento</small><b>${days}</b></div>
@@ -358,8 +367,8 @@ function overview(){const days=Math.ceil((EVENT-TODAY)/864e5);
  <div class="card pad kpi"><small>Prossimi eventi</small><b>${up.length}</b></div></div>
  <div class="two"><div>
  ${ib.length?`<div class="card pad" style="margin-bottom:20px;border-color:#f2d27a"><h3>📥 Richieste da assegnare</h3><p style="color:var(--muted);font-size:12px;margin:4px 0 8px">Task arrivate al tuo team: assegnale a una persona.</p>${ib.map(t=>`<div class="li"><div style="flex:1"><b>${esc(t.t)}</b><small>${t.req?'Da '+TEAMS[t.req].name+' → ':''}${TEAMS[t.team].name} · scade ${fmt(t.e)}</small></div><button class="btn sm" onclick="openTask(${t.id})">Assegna</button></div>`).join('')}</div>`:''}
- ${me.role!=='guest'?`<div class="card pad" style="margin-bottom:20px"><h3>Le mie task</h3>${mine.map(t=>`<div class="li" style="cursor:pointer" onclick="openTask(${t.id})"><span class="dot" style="background:${TEAMS[t.team].c}"></span><div style="flex:1">${esc(t.t)}<small>scade ${fmt(t.e)}</small></div>${t.p}%</div>`).join('')||'<div class="empty">Nessuna task assegnata.</div>'}</div>`:''}
- <div class="card pad"><h3 style="margin-bottom:10px">Avanzamento team</h3>${Object.entries(TEAMS).map(([k,T])=>{const ts=S.tasks.filter(t=>t.team===k),a=ts.length?Math.round(ts.reduce((s,t)=>s+t.p,0)/ts.length):0;return `<div class="li"><span class="dot" style="background:${T.c}"></span><div style="flex:1">${T.name}<div class="bar"><i style="width:${a}%;background:${T.c}"></i></div></div><span style="width:40px;text-align:right">${a}%</span></div>`}).join('')}</div>
+ ${me.role!=='guest'?`<div class="card pad" style="margin-bottom:20px"><h3>Le mie task</h3>${mine.map(t=>`<div class="li" style="cursor:pointer" onclick="openTask(${t.id})"><span class="dot" style="background:${TEAMS[t.team].c}"></span><div style="flex:1">${esc(t.t)}<small>scade ${fmt(t.e)}${t.own!==me.id?' · collaboratore':''}</small></div>${stChip(t)}</div>`).join('')||'<div class="empty">Nessuna task assegnata.</div>'}</div>`:''}
+ <div class="card pad"><h3 style="margin-bottom:10px">Task per team</h3>${Object.entries(TEAMS).map(([k,T])=>{const ts=S.tasks.filter(t=>t.team===k),r=ts.filter(t=>taskState(t).k==='run').length;return `<div class="li"><span class="dot" style="background:${T.c}"></span><div style="flex:1">${T.name}</div><span style="color:var(--muted);font-size:12px">${ts.length} task · ${r} in corso</span></div>`}).join('')}</div>
  </div><div class="card pad"><h3>Prossimi eventi</h3>${up.map(e=>`<div class="li" style="cursor:pointer" onclick="openEvent(${e.id})"><div style="text-align:center;width:40px"><b style="font-size:18px">${new Date(e.d).getDate()}</b><small>${new Date(e.d).toLocaleDateString('it-IT',{month:'short'})}</small></div><div style="flex:1"><b>${esc(e.t)}</b><small>${e.h} ${e.where?'· '+esc(e.where):''}</small></div>${teamChip(e.team)}</div>`).join('')||'<div class="empty">Nessun evento.</div>'}
  <button class="btn ghost sm" style="margin-top:10px;width:100%" onclick="go('calendar')">Apri calendario</button></div></div>`}
 
@@ -379,7 +388,7 @@ function timeline(){
 
 /* ---------- TASK ---------- */
 function tasksView(){
- const tabs=[['mine','Assegnate a me',t=>t.own===me.id],['team','Del mio team',t=>t.team===me.team],['inbox','Da assegnare',t=>!t.own&&(isSA()||t.team===me.team)],['sent','Richieste ad altri team',t=>t.req&&(isSA()||t.req===me.team)]];
+ const tabs=[['mine','Assegnate a me',t=>isMine(t)],['team','Del mio team',t=>t.team===me.team],['inbox','Da assegnare',t=>!t.own&&(isSA()||t.team===me.team)],['sent','Richieste ad altri team',t=>t.req&&(isSA()||t.req===me.team)]];
  if(isSA())tabs.splice(1,1,['all','Tutte',()=>true]);
  const cur=tabs.find(t=>t[0]===taskTab)||tabs[0];const list=S.tasks.filter(cur[2]);
  return header('Task','Task',newTaskBtn())+`<div class="tabs">${tabs.map(([k,l,f])=>`<button class="${cur[0]===k?'on':''}" onclick="taskTab='${k}';render()">${l} <span style="color:var(--muted)">${S.tasks.filter(f).length}</span></button>`).join('')}</div>
@@ -445,27 +454,27 @@ function adminView(){return header('Amministrazione','Utenti e permessi',`<butto
  <td><select onchange="setUser('${u.id}','team',this.value||null)" ${['guest','superadmin'].includes(u.role)?'disabled':''}><option value="">—</option>${Object.entries(TEAMS).map(([k,T])=>`<option value="${k}" ${u.team===k?'selected':''}>${T.name}</option>`).join('')}</select></td>
  <td>${u.id!==me.id?`<button class="x-btn" onclick="delUser('${u.id}')">Elimina</button>`:''}</td></tr>`).join('')}</table></div>
  <div class="card pad" style="margin-top:20px;overflow:auto"><h3 style="margin-bottom:10px">Matrice permessi</h3><table><tr><th>AZIONE</th><th>OSPITE</th><th>MEMBRO</th><th>TEAM LEAD</th><th>SUPERADMIN</th></tr>
- ${[['Timeline, panoramica, calendario','✓','✓','✓','✓'],['File condivisi con tutta la crew','✓','✓','✓','✓'],['File riservati del team','—','Proprio team','Proprio team','Tutti'],['Caricare file','—','✓','✓','✓'],['Creare task (proprio team o altri team)','—','✓','✓','✓'],['Assegnare task a persone','—','Solo prendere in carico','Proprio team','Tutte'],['Modificare task','—','Assegnate a sé','Proprio team','Tutte'],['Commentare','—','✓','✓','✓'],['Creare eventi calendario','—','—','✓','✓'],['Note private e proposte OdG','—','Proprio team','Proprio team','Tutti'],['Creare meeting e punti fissi','—','—','✓','✓'],['Gestire membri team','—','—','Proprio team','Tutti'],['Gestire utenti e ruoli','—','—','—','✓']].map(r=>`<tr>${r.map((c,i)=>i?`<td>${c}</td>`:`<td><b>${c}</b></td>`).join('')}</tr>`).join('')}</table></div>`}
+ ${[['Timeline, panoramica, calendario','✓','✓','✓','✓'],['File condivisi con tutta la crew','✓','✓','✓','✓'],['File riservati del team','—','Proprio team','Proprio team','Tutti'],['Caricare file','—','✓','✓','✓'],['Creare task (proprio team o altri team)','—','✓','✓','✓'],['Assegnare task a persone','—','Solo prendere in carico','Proprio team','Tutte'],['Modificare task','—','Assegnate a sé','Proprio team','Tutte'],['Commentare','—','✓','✓','✓'],['Modificare i propri commenti','—','✓','✓','✓'],['Eliminare commenti','—','Propri','Propri','Tutti'],['Creare eventi calendario','—','—','✓','✓'],['Note private e proposte OdG','—','Proprio team','Proprio team','Tutti'],['Creare meeting e punti fissi','—','—','✓','✓'],['Gestire membri team','—','—','Proprio team','Tutti'],['Gestire utenti e ruoli','—','—','—','✓']].map(r=>`<tr>${r.map((c,i)=>i?`<td>${c}</td>`:`<td><b>${c}</b></td>`).join('')}</tr>`).join('')}</table></div>`}
 
 /* ================= MODALI ================= */
 const mbg=(inner)=>`<div class="modal-bg" onclick="if(event.target===this)closeM()"><div class="modal">${inner}</div></div>`;
 function modalView(){
  if(modal.type==='task'){const t=modal.t,isNew=!t.id,ed=isNew||can.edit(t),asg=isNew?true:can.assign(t);
-  const ext=me.team&&t.team!==me.team&&isNew, owners=S.users.filter(u=>u.team===t.team);
+  const ext=me.team&&t.team!==me.team&&isNew, owners=S.users.filter(u=>u.team===t.team), others=S.users.filter(u=>u.role!=='guest'&&u.id!==t.own);
   const ownSel=isNew?(ext?false:(me.role!=='member'||true)):asg;
   return mbg(`<h2>${isNew?'Nuova task':ed?'Modifica task':esc(t.t)}</h2>
   ${!ed?`<div class="lock">🔒 Sola lettura: ${me.role==='guest'?'gli ospiti possono solo consultare.':'puoi modificare solo le task assegnate a te'+(me.role==='lead'?' o del tuo team':'')+'.'}</div>`:''}
   ${t.req&&!isNew?`<div class="info">Richiesta da <b>${TEAMS[t.req].name}</b> al team <b>${TEAMS[t.team].name}</b>.</div>`:''}
   <div class="f"><label>Titolo</label><input id="ft" value="${esc(t.t)}" ${ed?'':'disabled'}></div>
-  <div class="row2"><div class="f"><label>Team che esegue</label><select id="fteam" ${isNew?'':'disabled'} onchange="collect();modal.t.team=this.value;modal.t.own=null;render()">${Object.entries(TEAMS).map(([k,T])=>`<option value="${k}" ${t.team===k?'selected':''}>${T.name}${k===me.team?' (il mio)':''}</option>`).join('')}</select></div>
-  <div class="f"><label>Assegnata a</label>${ext?`<select disabled><option>Lo assegna il team ${TEAMS[t.team].name}</option></select>`:
-   `<select id="fown" ${(isNew&&(me.role!=='member'||true))||asg?'':'disabled'}><option value="">— Da assegnare —</option>${owners.filter(u=>isNew&&me.role==='member'&&!isSA()?u.id===me.id:true).map(u=>`<option value="${u.id}" ${t.own===u.id?'selected':''}>${esc(u.name)}</option>`).join('')}</select>`}</div></div>
+  <div class="row2"><div class="f"><label>Team che esegue</label><select id="fteam" ${isNew?'':'disabled'} onchange="collect();modal.t.team=this.value;modal.t.own=null;modal.t.asg=[];render()">${Object.entries(TEAMS).map(([k,T])=>`<option value="${k}" ${t.team===k?'selected':''}>${T.name}${k===me.team?' (il mio)':''}</option>`).join('')}</select></div>
+  <div class="f"><label>Owner (responsabile)</label>${ext?`<select disabled><option>Lo assegna il team ${TEAMS[t.team].name}</option></select>`:
+   `<select id="fown" onchange="collect();render()" ${(isNew&&(me.role!=='member'||true))||asg?'':'disabled'}><option value="">— Da assegnare —</option>${owners.filter(u=>isNew&&me.role==='member'&&!isSA()?u.id===me.id:true).map(u=>`<option value="${u.id}" ${t.own===u.id?'selected':''}>${esc(u.name)}</option>`).join('')}</select>`}</div></div>
   ${ext?`<div class="info">Stai creando una richiesta per un altro team: arriverà nella casella “Da assegnare” di ${TEAMS[t.team].name}, il cui team lead la assegnerà a una persona.</div>`:''}
+  ${ext?'':!HAS_ASG?(isSA()&&CLOUD?`<div class="info">Per assegnare una task a più persone esegui prima la migrazione SQL nella cartella db/migrations.</div>`:''):`<div class="f"><label>Altre persone coinvolte <span style="font-weight:400">(oltre all'owner)</span></label><div class="pick" id="fasgbox">${others.map(u=>`<label><input type="checkbox" class="fasg" value="${esc(u.id)}" ${(t.asg||[]).includes(u.id)?'checked':''} ${ed?'':'disabled'}>${esc(u.name)}${u.team?' · '+TEAMS[u.team].name:''}</label>`).join('')||'<span style="color:var(--muted);font-size:13px;padding:6px 0;display:block">Nessun altro utente.</span>'}</div></div>`}
   <div class="row2"><div class="f"><label>Inizio</label><input type="date" id="fs" value="${t.s}" ${ed?'':'disabled'}></div><div class="f"><label>Scadenza</label><input type="date" id="fe" value="${t.e}" ${ed?'':'disabled'}></div></div>
-  <div class="f"><label>Avanzamento: <b id="pv">${t.p}%</b></label><input type="range" id="fp" min="0" max="100" value="${t.p}" ${ed&&!isNew?'':'disabled'} oninput="pv.textContent=this.value+'%'" style="padding:0;border:none"></div>
   <div class="f"><label>Dipende da</label><select id="fdep" ${ed?'':'disabled'}><option value="">Nessuna</option>${S.tasks.filter(x=>x.id!==t.id).map(x=>`<option value="${x.id}" ${t.dep===x.id?'selected':''}>${esc(x.t)}</option>`).join('')}</select></div>
-  ${!isNew?`<h3 style="margin:18px 0 10px">Commenti</h3>${t.c.map(c=>`<div class="cm"><small>${esc(U(c.u).name)}</small><div>${esc(c.x)}</div></div>`).join('')||'<p style="color:var(--muted);font-size:13px;margin-bottom:8px">Nessun commento.</p>'}
-  ${can.comment()?`<div style="display:flex;gap:8px"><input id="fc" placeholder="Scrivi un commento..."><button class="btn ghost sm" onclick="addComment()">Invia</button></div>`:''}`:''}
+  ${!isNew?`<h3 style="margin:18px 0 10px">Commenti</h3>${t.c.map((c,i)=>commentHtml(c,i)).join('')||'<p style="color:var(--muted);font-size:13px;margin-bottom:8px">Nessun commento.</p>'}
+  ${can.comment()?`<div style="display:flex;gap:8px"><input id="fc" placeholder="Scrivi un commento..." value="${esc(modal.draft||'')}"><button class="btn ghost sm" onclick="addComment()">Invia</button></div>`:''}`:''}
   <div class="actions">${!isNew&&can.del(t)?`<button class="x-btn" style="margin-right:auto" onclick="delTask()">Elimina task</button>`:''}
   ${!isNew&&can.take(t)?`<button class="btn ghost" onclick="takeTask()">Prendi in carico</button>`:''}
   <button class="btn ghost" onclick="closeM()">${ed||asg?'Annulla':'Chiudi'}</button>${ed||asg?`<button class="btn" onclick="saveTask()">${isNew&&ext?'Invia richiesta':'Salva'}</button>`:''}</div>`)}
@@ -509,18 +518,33 @@ function modalView(){
 function go(v){view=v;q='';render();scrollTo(0,0)}
 function closeM(){modal=null;render()}
 function openTask(id){if(!id&&!can.create())return;
- const t=id?JSON.parse(JSON.stringify(S.tasks.find(x=>x.id===id))):{t:'',team:me.team||'MK',req:null,own:me.role==='member'?me.id:null,s:iso(TODAY),e:iso(new Date(TODAY.getTime()+14*864e5)),p:0,dep:null,c:[]};
+ const t=id?JSON.parse(JSON.stringify(S.tasks.find(x=>x.id===id))):{t:'',team:me.team||'MK',req:null,own:me.role==='member'?me.id:null,s:iso(TODAY),e:iso(new Date(TODAY.getTime()+14*864e5)),p:0,dep:null,asg:[],c:[]};
  modal={type:'task',t};render()}
 function collect(){const t=modal.t,g=id=>document.getElementById(id);
- if(g('ft'))t.t=g('ft').value;if(g('fown'))t.own=g('fown').value||null;if(g('fs'))t.s=g('fs').value;if(g('fe'))t.e=g('fe').value;if(g('fp'))t.p=+g('fp').value;if(g('fdep'))t.dep=g('fdep').value?+g('fdep').value:null}
+ if(g('ft'))t.t=g('ft').value;if(g('fown'))t.own=g('fown').value||null;if(g('fs'))t.s=g('fs').value;if(g('fe'))t.e=g('fe').value;if(g('fdep'))t.dep=g('fdep').value?+g('fdep').value:null;if(g('fasgbox'))t.asg=[...document.querySelectorAll('.fasg:checked')].map(i=>i.value).filter(v=>v!==t.own);if(g('fc'))modal.draft=g('fc').value}
 function saveTask(){collect();const t=modal.t;if(!t.t.trim())return alert('Inserisci un titolo');if(t.e<t.s)return alert('La scadenza precede l\'inizio');
- if(!t.id){if(me.team&&t.team!==me.team){t.req=me.team;t.own=null}t.id=nid(S.tasks);S.tasks.push(t)}
+ if(!t.id&&me.team&&t.team!==me.team){t.req=me.team;t.own=null;t.asg=[]}
+ if(!t.own&&(t.asg||[]).length)return alert('Scegli un owner prima di aggiungere altre persone.');
+ if(!t.id){t.id=nid(S.tasks);S.tasks.push(t)}
  else S.tasks[S.tasks.findIndex(x=>x.id===t.id)]=t;save();closeM()}
-function takeTask(){const o=S.tasks.find(x=>x.id===modal.t.id);o.own=me.id;save();closeM()}
+function takeTask(){const o=S.tasks.find(x=>x.id===modal.t.id);o.own=me.id;o.asg=(o.asg||[]).filter(id=>id!==me.id);save();closeM()}
 function delTask(){if(!confirm('Eliminare questa task?'))return;S.tasks=S.tasks.filter(x=>x.id!==modal.t.id);S.tasks.forEach(x=>{if(x.dep===modal.t.id)x.dep=null});save();closeM()}
 async function addComment(){const v=fc.value.trim();if(!v)return;collect();const o=S.tasks.find(x=>x.id===modal.t.id);
- if(CLOUD){const r=await sb.rpc('add_comment',{tid:o.id,txt:v});if(r.error)return alert(r.error.message);const lt=last.tasks.find(x=>x.id===o.id);o.c.push({u:me.id,x:v});if(lt)lt.c=clone(o.c);modal.t.c=o.c;render();return}
- o.c.push({u:me.id,x:v});modal.t.c=o.c;save();render()}
+ if(CLOUD){const r=await sb.rpc('add_comment',{tid:o.id,txt:v});if(r.error)return alert(r.error.message);const lt=last.tasks.find(x=>x.id===o.id);o.c.push({u:me.id,x:v});if(lt)lt.c=clone(o.c);modal.t.c=o.c;modal.draft='';render();return}
+ o.c.push({u:me.id,x:v});modal.t.c=o.c;modal.draft='';save();render()}
+function commentHtml(c,i){
+ if(modal.editC===i)return `<div class="cm"><small>${esc(U(c.u).name)}</small><textarea id="fce" style="margin-top:6px">${esc(c.x)}</textarea><div class="cmx"><button onclick="modal.editC=null;render()">Annulla</button><button class="btn sm" onclick="saveComment(${i})">Salva</button></div></div>`;
+ const ed=can.editC(c),dl=can.delC(c);
+ return `<div class="cm"><small>${esc(U(c.u).name)}${c.edited?' · modificato':''}</small><div>${esc(c.x)}</div>${ed||dl?`<div class="cmx">${ed?`<button onclick="editComment(${i})">Modifica</button>`:''}${dl?`<button class="del" onclick="delComment(${i})">Elimina</button>`:''}</div>`:''}</div>`}
+function editComment(i){collect();modal.editC=i;render();setTimeout(()=>{const e=document.getElementById('fce');if(e){e.focus();e.setSelectionRange(e.value.length,e.value.length)}})}
+async function saveComment(i){const v=document.getElementById('fce').value.trim();if(!v)return alert('Il commento non può essere vuoto.');collect();
+ const o=S.tasks.find(x=>x.id===modal.t.id),c=o.c[i];if(!c||!can.editC(c))return;
+ if(v!==c.x){if(CLOUD){const r=await sb.rpc('edit_comment',{tid:o.id,idx:i,old_txt:c.x,new_txt:v});if(r.error)return alert(r.error.message)}c.x=v;c.edited=true}
+ const lt=CLOUD&&last.tasks.find(x=>x.id===o.id);if(lt)lt.c=clone(o.c);modal.t.c=o.c;modal.editC=null;if(!CLOUD)save();render()}
+async function delComment(i){if(!confirm('Eliminare questo commento?'))return;collect();
+ const o=S.tasks.find(x=>x.id===modal.t.id),c=o.c[i];if(!c||!can.delC(c))return;
+ if(CLOUD){const r=await sb.rpc('delete_comment',{tid:o.id,idx:i,old_txt:c.x});if(r.error)return alert(r.error.message)}
+ o.c.splice(i,1);const lt=CLOUD&&last.tasks.find(x=>x.id===o.id);if(lt)lt.c=clone(o.c);modal.t.c=o.c;modal.editC=null;if(!CLOUD)save();render()}
 function openEvent(id,d){const e=id?{...S.events.find(x=>x.id===id)}:{t:'',d:d||iso(TODAY),h:'18:30',where:'',team:isSA()?null:me.team,desc:''};if(!id&&!can.event())return;modal={type:'event',e};render()}
 function saveEvent(){const e=modal.e;Object.assign(e,{t:et.value.trim(),d:ed.value,h:eh.value,where:ew.value,team:etm.value||null,desc:eds.value});if(!e.t)return alert('Inserisci un titolo');
  if(e.id)S.events[S.events.findIndex(x=>x.id===e.id)]=e;else{e.id=nid(S.events);S.events.push(e)}save();closeM()}
