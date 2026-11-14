@@ -8,7 +8,7 @@
 <script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2"></script>
 <script>
 /* Configurazione Supabase: lascia vuoto per la modalità demo (dati nel browser) */
-window.CFG={url:'',key:''};
+window.CFG={url:'https://qugfxkymtnfnkdasmwgt.supabase.co',key:'sb_publishable_g3Exxy0sebxbGIutdHrPZQ_7LBnHM-9',google:false};
 </script>
 <style>
 :root{--red:#e62b1e;--red-soft:#fdecea;--ink:#1a1a1a;--muted:#8a8a8a;--line:#ececec;--bg:#fafafa;
@@ -233,7 +233,9 @@ async function doSync(){
  if(errs.length)alert('Alcune modifiche non sono state salvate (permessi insufficienti o errore):\n'+errs.join('\n'));
  if(!modal)render();
 }
-if(CLOUD){sb.auth.onAuthStateChange(ev=>{if(ev==='SIGNED_IN'||ev==='SIGNED_OUT')setTimeout(boot)});
+if(CLOUD){sb.auth.onAuthStateChange(ev=>{
+  if(ev==='PASSWORD_RECOVERY')setTimeout(async()=>{const p=prompt('Nuova password (min. 8 caratteri):');if(p&&p.length>=8){const r=await sb.auth.updateUser({password:p});alert(r.error?r.error.message:'Password aggiornata.')}});
+  if(ev==='SIGNED_IN'||ev==='SIGNED_OUT')setTimeout(boot)});
  addEventListener('focus',()=>{if(me&&!modal)sync()});}
 const U=id=>S.users.find(u=>u.id===id)||{name:'Da assegnare',ini:'?'};
 const esc=s=>String(s??'').replace(/[&<>"']/g,c=>({'&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;',"'":'&#39;'}[c]));
@@ -277,7 +279,7 @@ function render(){
  ${can.users()?`<div class="navsec">AMMINISTRAZIONE</div><button class="${view==='admin'?'on':''}" onclick="go('admin')"><span class="ic">⚙</span>Utenti e permessi</button>`:''}</div>
  ${view==='timeline'?`<div class="sec"><span>FILTRA TEAM</span><span>${Object.values(filt).filter(Boolean).length}/4</span></div>
  <div class="tf">${Object.entries(TEAMS).map(([k,T])=>`<label><span class="dot" style="background:${T.c}"></span>${T.name}<span class="n">${S.users.filter(u=>u.team===k).length}</span><input type="checkbox" ${filt[k]?'checked':''} onchange="filt.${k}=this.checked?1:0;render()"></label>`).join('')}</div>`:''}
- <div class="user">${av(me,me.team)}<div class="meta"><b>${esc(me.name)}</b>${roleTag(me.role)} ${me.team?`<small>${TEAMS[me.team].name}</small>`:''}</div><button title="Esci" onclick="logout()">⇥</button></div>
+ <div class="user">${av(me,me.team)}<div class="meta"><b>${esc(me.name)}</b>${roleTag(me.role)} ${me.team?`<small>${TEAMS[me.team].name}</small>`:''}</div>${CLOUD?`<button title="Imposta / cambia password" onclick="setPw()">🔑</button>`:''}<button title="Esci" onclick="logout()">⇥</button></div>
  </aside><main>${V()}</main></div>${modal?modalView():''}`;
 }
 
@@ -285,10 +287,16 @@ function render(){
 function loginView(){
  const logo=`<div class="logo"><div class="x">X</div><div><b>TED<span>x</span>Lerici</b><small>PROJECT HUB · 2027</small></div></div>`;
  if(CLOUD)return `<div class="login"><div class="card">${logo}
- <h1 style="font-size:24px">Accedi</h1><p style="color:var(--muted);margin:6px 0 20px">Area riservata alla crew di TEDxLerici. Usa il tuo account Google: la verifica in due passaggi è gestita da Google.</p>
+ <h1 style="font-size:24px">${auth.reg?'Crea il tuo account':'Accedi'}</h1><p style="color:var(--muted);margin:6px 0 20px">Area riservata alla crew di TEDxLerici.</p>
  ${bootErr?`<div class="lock" style="color:var(--red)">${esc(bootErr)}</div>`:''}
- <button class="btn ghost" style="width:100%;display:flex;gap:10px;justify-content:center;align-items:center" onclick="googleLogin()"><svg width="18" height="18" viewBox="0 0 48 48"><path fill="#FFC107" d="M43.6 20.5H42V20H24v8h11.3C33.7 32.7 29.2 36 24 36c-6.6 0-12-5.4-12-12s5.4-12 12-12c3.1 0 5.8 1.2 7.9 3.1l5.7-5.7C34 6.1 29.3 4 24 4 13 4 4 13 4 24s9 20 20 20 20-9 20-20c0-1.3-.1-2.4-.4-3.5z"/><path fill="#FF3D00" d="m6.3 14.7 6.6 4.8C14.7 15.1 19 12 24 12c3.1 0 5.8 1.2 7.9 3.1l5.7-5.7C34 6.1 29.3 4 24 4 16.3 4 9.7 8.3 6.3 14.7z"/><path fill="#4CAF50" d="M24 44c5.2 0 9.9-2 13.4-5.2l-6.2-5.2C29.2 35.1 26.7 36 24 36c-5.2 0-9.6-3.3-11.3-8l-6.5 5C9.5 39.6 16.2 44 24 44z"/><path fill="#1976D2" d="M43.6 20.5H42V20H24v8h11.3c-.8 2.2-2.2 4.2-4.1 5.6l6.2 5.2C37 39.2 44 34 44 24c0-1.3-.1-2.4-.4-3.5z"/></svg>Continua con Google</button>
- <div class="demo">Chi non è ancora stato invitato entra come <b>Ospite</b> (sola lettura). Il superadmin assegna ruolo e team.</div></div></div>`;
+ ${auth.err?`<div class="lock" style="color:var(--red)">${esc(auth.err)}</div>`:''}${auth.msg?`<div class="info">${esc(auth.msg)}</div>`:''}
+ <form onsubmit="event.preventDefault();emailAuth()">${auth.reg?`<div class="f"><label>Nome e cognome</label><input id="ln" required></div>`:''}
+ <div class="f"><label>Email</label><input id="le" type="email" value="${esc(auth.email||'')}" required autocomplete="username"></div>
+ <div class="f"><label>Password${auth.reg?' (min. 8 caratteri)':''}</label><input id="lp" type="password" minlength="${auth.reg?8:1}" required autocomplete="${auth.reg?'new-password':'current-password'}"></div>
+ <button class="btn" style="width:100%;margin-top:6px">${auth.reg?'Registrati':'Accedi'}</button></form>
+ <div class="actions" style="justify-content:space-between"><button class="x-btn" onclick="auth={reg:${!auth.reg}};render()">${auth.reg?'Hai già un account? Accedi':'Primo accesso? Registrati'}</button>${auth.reg?'':`<button class="x-btn" style="color:var(--muted)" onclick="resetPw()">Password dimenticata</button>`}</div>
+ ${CFG.google?`<div style="text-align:center;color:var(--muted);font-size:12px;margin:14px 0">oppure</div><button class="btn ghost"`:'<!--'} style="width:100%;display:flex;gap:10px;justify-content:center;align-items:center" onclick="googleLogin()"><svg width="18" height="18" viewBox="0 0 48 48"><path fill="#FFC107" d="M43.6 20.5H42V20H24v8h11.3C33.7 32.7 29.2 36 24 36c-6.6 0-12-5.4-12-12s5.4-12 12-12c3.1 0 5.8 1.2 7.9 3.1l5.7-5.7C34 6.1 29.3 4 24 4 13 4 4 13 4 24s9 20 20 20 20-9 20-20c0-1.3-.1-2.4-.4-3.5z"/><path fill="#FF3D00" d="m6.3 14.7 6.6 4.8C14.7 15.1 19 12 24 12c3.1 0 5.8 1.2 7.9 3.1l5.7-5.7C34 6.1 29.3 4 24 4 16.3 4 9.7 8.3 6.3 14.7z"/><path fill="#4CAF50" d="M24 44c5.2 0 9.9-2 13.4-5.2l-6.2-5.2C29.2 35.1 26.7 36 24 36c-5.2 0-9.6-3.3-11.3-8l-6.5 5C9.5 39.6 16.2 44 24 44z"/><path fill="#1976D2" d="M43.6 20.5H42V20H24v8h11.3c-.8 2.2-2.2 4.2-4.1 5.6l6.2 5.2C37 39.2 44 34 44 24c0-1.3-.1-2.4-.4-3.5z"/></svg>Continua con Google</button>${CFG.google?'':'-->'}
+ <div class="demo">Usa l'email con cui sei stato invitato: ruolo e team vengono assegnati in automatico. Chi non è invitato entra come <b>Ospite</b> (sola lettura).</div></div></div>`;
  if(auth.step===1)return `<div class="login"><div class="card">${logo}
  <h1 style="font-size:24px">Accedi</h1><p style="color:var(--muted);margin:6px 0 20px">Area riservata alla crew di TEDxLerici.</p>
  ${auth.err?`<div class="lock" style="color:var(--red)">${auth.err}</div>`:''}
@@ -312,9 +320,18 @@ function step2(){const v=[...document.querySelectorAll('.oi')].map(i=>i.value).j
  if(v!==auth.code){auth.err='Codice non valido.';render();return}
  me=S.users.find(u=>u.id===auth.uid);auth={step:1};view='overview';save();render()}
 function logout(){if(CLOUD){sb.auth.signOut();me=null;render();return}me=null;save();render()}
+async function emailAuth(){const email=le.value.trim(),password=lp.value;auth.email=email;auth.err='';auth.msg='';
+ if(auth.reg){const r=await sb.auth.signUp({email,password,options:{data:{full_name:ln.value.trim()},emailRedirectTo:location.origin+location.pathname}});
+  if(r.error)auth.err=r.error.message;else if(!r.data.session){auth={email,msg:'Account creato. Controlla la tua email e clicca il link di conferma, poi accedi.'}}}
+ else{const r=await sb.auth.signInWithPassword({email,password});if(r.error)auth.err=r.error.message==='Invalid login credentials'?'Email o password non corretti.':r.error.message}
+ render()}
+async function resetPw(){const email=(document.getElementById('le')||{}).value?.trim();if(!email)return alert('Scrivi prima la tua email.');
+ const r=await sb.auth.resetPasswordForEmail(email,{redirectTo:location.origin+location.pathname});alert(r.error?r.error.message:'Ti abbiamo inviato un\'email per reimpostare la password.')}
+async function setPw(){const p=prompt('Nuova password (min. 8 caratteri):');if(!p)return;if(p.length<8)return alert('Minimo 8 caratteri.');
+ const r=await sb.auth.updateUser({password:p});alert(r.error?r.error.message:'Password impostata. Da ora puoi accedere con email e password.')}
 function googleLogin(){sb.auth.signInWithOAuth({provider:'google',options:{redirectTo:location.origin+location.pathname}})}
 async function invite(name,email,role,team){const r=await sb.from('invites').upsert({email:email.toLowerCase(),name,role,team});
- if(r.error)return alert('Invito non salvato: '+r.error.message);alert(`Invito registrato. ${name} potrà accedere con l'account Google ${email} e avrà subito ruolo e team assegnati.`);closeM()}
+ if(r.error)return alert('Invito non salvato: '+r.error.message);alert(`Utente abilitato (nessuna email viene inviata).\n\nComunica a ${name} di aprire ${location.origin} e cliccare "Primo accesso? Registrati" usando l'email ${email}: avrà subito ruolo e team assegnati.`);closeM()}
 async function dl(id){const f=S.files.find(x=>x.id===id);if(!f.url)return alert('Nessun file collegato.');
  if(!f.url.startsWith('sb:'))return window.open(f.url);
  const r=await sb.storage.from('files').createSignedUrl(f.url.slice(3),300);if(r.error)return alert('Accesso negato: '+r.error.message);window.open(r.data.signedUrl)}
