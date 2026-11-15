@@ -167,6 +167,19 @@ td select{padding:6px 8px}
 .mnav button.on{background:var(--red-soft);color:var(--red);border-color:var(--red)}
 .stats{gap:14px}.stats .ev{display:none}.row2{grid-template-columns:1fr}.cal .d{min-height:70px}}
 @media(max-height:600px){main{overflow:auto;display:block}.mbody{overflow:visible}.mbody.fill{display:block}.mbody.fill .gantt{max-height:75vh}}
+
+/* aree team e fogli */
+.shwrap{overflow:auto;border:1px solid var(--line);border-radius:12px;background:var(--card)}
+table.sheet{border-collapse:separate;border-spacing:0;table-layout:fixed}
+table.sheet th{position:sticky;top:0;z-index:2;background:var(--head);border-bottom:1px solid var(--line);white-space:nowrap}
+table.sheet td{padding:0;border-bottom:1px solid var(--line);border-right:1px solid var(--line);vertical-align:middle}
+table.sheet td:last-child{border-right:none;text-align:center}
+table.sheet td.rn{color:var(--muted);font-size:11px;text-align:center;padding:0 6px;background:var(--head)}
+table.sheet td input,table.sheet td select{border:none;border-radius:0;background:transparent;padding:9px 10px;font-size:13px;min-height:38px}
+table.sheet td input:focus,table.sheet td select:focus{outline:2px solid var(--red);outline-offset:-2px;background:var(--card)}
+table.sheet tr:hover td{background:var(--hover)}
+.cwl{display:flex;align-items:center}.cwl a{padding:0 8px;color:var(--info-c);text-decoration:none;font-weight:700}
+.shcard:hover{box-shadow:0 4px 14px var(--shadow)}
 </style>
 </head>
 <body>
@@ -224,14 +237,34 @@ notes:[
 {id:4,team:'OP',by:'u3',x:'Due sponsor in trattativa, serve kit presentazione aggiornato',mt:1,d:'2026-11-12'},
 {id:5,team:'PA',by:'u4',x:'Disponibilità castello da confermare entro dicembre',mt:null,d:'2026-11-08'}],
 meetings:[{id:1,t:'Kick-off crew',ev:1,teams:['MK','OP','PA','SP'],fixed:['Benvenuto e presentazione del tema'],order:[],minutes:''}],
-suggestions:[]
+suggestions:[],
+sheet_rows:[
+{id:1,sheet:'speaker',team:'SP',d:{n:'Dott.ssa Chiara Ferri',ruolo:'Biologa marina',talk:'Il mare che cambia',by:'u1',st:'In valutazione',voto:4,cont:'chiara@esempio.it',link:'',note:'Esempio: sostituisci con i tuoi speaker'}},
+{id:2,sheet:'speaker',team:'SP',d:{n:'Luca Bianchi',ruolo:'Velista oceanico',talk:'Navigare da soli',by:'u2',st:'Proposto',voto:'',cont:'',link:'https://example.com',note:''}},
+{id:3,sheet:'speaker',team:'SP',d:{n:'Marta Gallo',ruolo:'Architetta',talk:'Città a misura di persona',by:'u1',st:'Confermato',voto:5,cont:'',link:'',note:''}},
+{id:4,sheet:'piano',team:'MK',d:{d:'2027-01-12',canale:'Instagram',fmt:'Reel',tit:'Annuncio tema 2027',own:'u7',st:'Idea',note:''}},
+{id:5,sheet:'piano',team:'MK',d:{d:'2027-01-19',canale:'LinkedIn',fmt:'Post',tit:'Call for speaker',own:'u6',st:'In lavorazione',note:''}},
+{id:6,sheet:'piano',team:'MK',d:{d:'2027-02-02',canale:'Sito / newsletter',fmt:'Articolo',tit:'Chi siamo',own:'u7',st:'Pianificato',note:''}},
+{id:7,sheet:'insights',team:'MK',d:{d:'2026-11-01',canale:'Instagram',fol:1250,reach:5400,imp:9800,eng:4.2,post:12,note:''}},
+{id:8,sheet:'insights',team:'MK',d:{d:'2026-11-01',canale:'Facebook',fol:830,reach:1900,imp:3100,eng:2.1,post:6,note:''}},
+{id:9,sheet:'partner',team:'PA',d:{n:'Cantiere Azzurro Srl',cat:'Platinum',ref:'Mario Verdi',cont:'m.verdi@esempio.it',val:15000,st:'In trattativa',own:'u4',note:'Esempio'}},
+{id:10,sheet:'partner',team:'PA',d:{n:'Banca del Golfo',cat:'Gold',ref:'',cont:'',val:8000,st:'Confermato',own:'u5',note:''}},
+{id:11,sheet:'partner',team:'PA',d:{n:'Pasticceria Lerici',cat:'In kind',ref:'',cont:'',val:500,st:'Confermato',own:'u5',note:'Buffet backstage'}},
+{id:12,sheet:'tesoreria',team:'PA',d:{d:'2026-11-05',desc:'Acconto sponsor Banca del Golfo',tipo:'Entrata',cat:'Sponsorizzazione',imp:4000,st:'Effettuato',doc:'',note:'Esempio'}},
+{id:13,sheet:'tesoreria',team:'PA',d:{d:'2026-11-10',desc:'Licenza TEDx',tipo:'Uscita',cat:'Servizi',imp:1000,st:'Effettuato',doc:'',note:''}},
+{id:14,sheet:'eventi',team:'OP',d:{ev:'TEDxConnect',voce:'Serata networking speaker',d:'2027-06-10',luogo:'Lerici',own:'u3',st:'Da pianificare',bud:1500,note:'Esempio'}},
+{id:15,sheet:'eventi',team:'OP',d:{ev:'TEDxGala',voce:'Cena di gala',d:'2027-10-22',luogo:'Castello di Lerici',own:'u9',st:'In corso',bud:6000,note:''}},
+{id:16,sheet:'eventi',team:'OP',d:{ev:'TEDx Main Event',voce:'Giornata dell\'evento',d:'2027-10-23',luogo:'Lerici',own:'u3',st:'In corso',bud:25000,note:''}},
+{id:17,sheet:'inventario',team:'OP',d:{n:'Radiomicrofoni headset',cat:'Audio / video',qta:6,pos:'Magazzino A',st:'Disponibile',own:'u9',note:'Esempio'}},
+{id:18,sheet:'inventario',team:'OP',d:{n:'Sedie pieghevoli',cat:'Arredi',qta:300,pos:'Da noleggiare',st:'Da acquistare',own:'u3',note:''}}]
 };
 const CLOUD=!!(CFG.url&&CFG.key&&window.supabase);
 const sb=CLOUD?supabase.createClient(CFG.url,CFG.key):null;
-let S, last=null, loading=CLOUD, bootErr='', HAS_ASG=true, HAS_NUM=true, HAS_MIN=true, HAS_SUG=true, HAS_PROF=true;
-if(CLOUD)S={users:[],tasks:[],events:[],files:[],notes:[],meetings:[],folders:[],suggestions:[]};
+let S, last=null, loading=CLOUD, bootErr='', HAS_ASG=true, HAS_NUM=true, HAS_MIN=true, HAS_SUG=true, HAS_PROF=true, HAS_SHEETS=true, HAS_ACC=true;
+if(CLOUD)S={users:[],tasks:[],events:[],files:[],notes:[],meetings:[],folders:[],suggestions:[],sheet_rows:[]};
 else{try{S=JSON.parse(localStorage.getItem('tedxl2'))}catch(e){} if(!S||!S.meetings)S=JSON.parse(JSON.stringify(seed));}
 if(!S.suggestions)S.suggestions=[];
+if(!S.sheet_rows)S.sheet_rows=CLOUD?[]:JSON.parse(JSON.stringify(seed.sheet_rows));
 if(!CLOUD){let n=Math.max(0,...S.tasks.map(t=>t.num||0));[...S.tasks].sort((a,b)=>a.id-b.id).forEach(t=>{if(t.num==null)t.num=++n})}
 let rv=null, rm=null, minDraft={}, minTimer=null, theme='light';
 try{theme=localStorage.getItem('tedx_theme')==='dark'?'dark':'light'}catch(e){}
@@ -246,15 +279,18 @@ const save=()=>{if(CLOUD){sync();return}try{localStorage.setItem('tedxl2',JSON.s
 const TABLES=['tasks','events','files','notes','meetings'];
 async function load(){
  const names=['profiles',...TABLES,'folders'];
- const res=await Promise.all([...names.map(n=>sb.from(n).select('*')),sb.from('suggestions').select('*')]);
- const rs=res.pop();
+ const res=await Promise.all([...names.map(n=>sb.from(n).select('*')),sb.from('suggestions').select('*'),sb.from('sheet_rows').select('*')]);
+ const rsh=res.pop(),rs=res.pop();
  const err=res.find(r=>r.error);if(err)throw err.error;
  const [p,...rest]=res;S.users=p.data;
  TABLES.forEach((t,i)=>S[t]=rest[i].data);
  S.folders=rest[TABLES.length].data.map(x=>x.name).sort();
  HAS_SUG=!rs.error;S.suggestions=HAS_SUG?rs.data:[];
+ HAS_SHEETS=!rsh.error;S.sheet_rows=HAS_SHEETS?rsh.data:[];
+ tesOK=false;if(HAS_SHEETS){try{const t=await sb.rpc('tes_status');tesOK=t.data===true}catch(e){}}
  HAS_ASG=!S.tasks.length||'asg' in S.tasks[0];HAS_NUM=!S.tasks.length||'num' in S.tasks[0];
- HAS_MIN=!S.meetings.length||'minutes' in S.meetings[0];HAS_PROF=!S.users.length||'phone' in S.users[0];
+ HAS_MIN=!S.meetings.length||'minutes' in S.meetings[0];HAS_PROF=!S.users.length||'phone' in S.users[0];HAS_ACC=!S.users.length||'access' in S.users[0];
+ S.users.forEach(u=>u.access=u.access||[]);S.sheet_rows.forEach(x=>x.d=x.d||{});
  S.tasks.forEach(t=>{t.c=t.c||[];t.asg=t.asg||[]});S.meetings.forEach(m=>{m.fixed=m.fixed||[];m.teams=m.teams||[];if(HAS_MIN)m.minutes=m.minutes||''});
  S.suggestions.forEach(x=>x.asg=x.asg||[]);
  last=clone(S);
@@ -272,7 +308,7 @@ let syncing=Promise.resolve();
 function sync(){syncing=syncing.then(doSync);return syncing}
 async function doSync(){
  const errs=[];const strip=(t,o)=>{if(t==='tasks'){const {c,...r}=o;if(!HAS_ASG)delete r.asg;if(!HAS_NUM)delete r.num;return r}if(t==='meetings'&&!HAS_MIN){const {minutes,...r}=o;return r}return o};
- for(const t of [...TABLES,...(HAS_SUG?['suggestions']:[])]){
+ for(const t of [...TABLES,...(HAS_SUG?['suggestions']:[]),...(HAS_SHEETS?['sheet_rows']:[])]){
   const old=new Map(last[t].map(o=>[o.id,JSON.stringify(strip(t,o))])),now=new Map(S[t].map(o=>[o.id,o]));
   const up=S[t].filter(o=>old.get(o.id)!==JSON.stringify(strip(t,o))).map(o=>strip(t,o));
   const del=[...old.keys()].filter(id=>!now.has(id));
@@ -290,7 +326,7 @@ async function doSync(){
  try{await load()}catch(e){errs.push(e.message)}
  if(me)me=S.users.find(u=>u.id===me.id)||me;
  if(errs.length)alert('Alcune modifiche non sono state salvate (permessi insufficienti o errore):\n'+errs.join('\n'));
- if(!modal&&!(document.activeElement&&document.activeElement.id==='mmin'))render();
+ if(!modal&&!(document.activeElement&&(document.activeElement.id==='mmin'||document.activeElement.closest('.sheetbox'))))render();
 }
 if(CLOUD){sb.auth.onAuthStateChange(ev=>{
   if(ev==='PASSWORD_RECOVERY')setTimeout(async()=>{const p=prompt('Nuova password (min. 8 caratteri):');if(p&&p.length>=8){const r=await sb.auth.updateUser({password:p});alert(r.error?r.error.message:'Password aggiornata.')}});
@@ -324,6 +360,7 @@ const can={
  meeting:()=>isSA()||me.role==='lead',
  minutes:()=>isSA()||me.role==='lead',
  suggest:()=>me.role!=='guest',
+ access:()=>isSA()||me.role==='lead',
  accept:g=>isSA()||(!!g.team&&isLead(g.team))};
 const av=(u,team,cls='')=>{const T=TEAMS[team||u.team]||{c:'#777',bg:'#77777724'};
  const ph=typeof u.photo==='string'&&/^data:image\/(jpeg|png|webp);base64,[A-Za-z0-9+\/=]+$/.test(u.photo);
@@ -357,16 +394,17 @@ function render(){
  rv=view;rm=modal;
  const nav=[['overview','◫','Panoramica'],['timeline','☰','Timeline'],['tasks','✓','Task',inbox()],['calendar','▦','Calendario'],['files','🗀','File'],['meetings','◉','Meeting e OdG',pendSug()],['team','👥','Team']];
  const navB=nav.filter(n=>me.role!=='guest'||!['tasks','meetings'].includes(n[0])).map(([k,i,l,b])=>`<button class="${view===k?'on':''}" onclick="go('${k}')"><span class="ic">${i}</span>${l}${b?`<span class="badge">${b}</span>`:''}</button>`).join('');
- const adm=can.users()?`<button class="${view==='admin'?'on':''}" onclick="go('admin')"><span class="ic">🛡</span>Utenti e permessi</button>`:'';
- const V={overview,timeline,tasks:tasksView,calendar:calView,files:filesView,meetings:meetView,team:teamView,admin:adminView}[view];
+ const teamNavB=me.role==='guest'?'':Object.entries(TEAMS).filter(([k])=>teamAccess(k)).map(([k,T])=>`<button class="${view==='teamhub'&&curTeam===k?'on':''}" onclick="openTeam('${k}')"><span class="dot" style="background:${T.c};width:10px;height:10px;margin:0 4px"></span>${T.name}</button>`).join('');
+ const adm=can.access()?`<button class="${view==='admin'?'on':''}" onclick="go('admin')"><span class="ic">🛡</span>Utenti e permessi</button>`:'';
+ const V={overview,timeline,tasks:tasksView,calendar:calView,files:filesView,meetings:meetView,team:teamView,teamhub:teamHubView,admin:adminView}[view];
  const out=V(),k=out.indexOf(BODY),top=k<0?'':out.slice(0,k),body=k<0?out:out.slice(k+BODY.length);
  R.innerHTML=`<div class="app"><aside>
  <div class="logo"><div class="x">X</div><div><b>TED<span>x</span>Lerici</b><small>HUB</small></div></div>
- <div class="nav">${navB}${can.users()?`<div class="navsec">AMMINISTRAZIONE</div>${adm}`:''}</div>
+ <div class="nav">${navB}${teamNavB?`<div class="navsec">AREE TEAM</div>${teamNavB}`:''}${can.access()?`<div class="navsec">AMMINISTRAZIONE</div>${adm}`:''}</div>
  ${view==='timeline'?`<div class="sec"><span>FILTRA TEAM</span><span>${Object.values(filt).filter(Boolean).length}/4</span></div>
  <div class="tf">${Object.entries(TEAMS).map(([k,T])=>`<label><span class="dot" style="background:${T.c}"></span>${T.name}<span class="n">${S.users.filter(u=>u.team===k).length}</span><input type="checkbox" ${filt[k]?'checked':''} onchange="filt.${k}=this.checked?1:0;render()"></label>`).join('')}</div>`:''}
  <div class="user">${av(me,me.team)}<div class="meta"><b>${esc(me.name)}</b>${roleTag(me.role)} ${me.team?`<small>${TEAMS[me.team].name}</small>`:''}</div><button title="Impostazioni" onclick="openSettings()">⚙</button><button title="Esci" onclick="logout()">⇥</button></div>
- </aside><main><div class="mnav">${navB}${adm}<button onclick="openSettings()">⚙ Impostazioni</button><button onclick="logout()">⇥ Esci</button></div><div class="mhead">${top}</div><div class="mbody ${view==='timeline'?'fill':''}">${body}</div></main></div>${modal?modalView():''}`;
+ </aside><main><div class="mnav">${navB}${teamNavB}${adm}<button onclick="openSettings()">⚙ Impostazioni</button><button onclick="logout()">⇥ Esci</button></div><div class="mhead">${top}</div><div class="mbody ${view==='timeline'?'fill':''}">${body}</div></main></div>${modal?modalView():''}`;
  const nb=document.querySelector('.mbody'),ng=document.querySelector('.gantt'),nm=document.querySelector('.mb');
  if(nb)nb.scrollTop=sv.b;if(ng){ng.scrollLeft=sv.gx;ng.scrollTop=sv.gy}if(nm)nm.scrollTop=sv.m;
 }
@@ -406,7 +444,7 @@ function step1(){const u=S.users.find(x=>x.email.toLowerCase()===le.value.trim()
 function step2(){const v=[...document.querySelectorAll('.oi')].map(i=>i.value).join('');
  if(v!==auth.code){auth.err='Codice non valido.';render();return}
  me=S.users.find(u=>u.id===auth.uid);auth={step:1};view='overview';save();render()}
-function logout(){if(CLOUD){sb.auth.signOut();me=null;render();return}me=null;save();render()}
+function logout(){tesOK=false;try{sessionStorage.removeItem('tedxl2_tes')}catch(e){}if(CLOUD){sb.auth.signOut();me=null;render();return}me=null;save();render()}
 async function emailAuth(){const email=le.value.trim(),password=lp.value;auth.email=email;auth.err='';auth.msg='';
  if(auth.reg){const r=await sb.auth.signUp({email,password,options:{data:{full_name:ln.value.trim()},emailRedirectTo:location.origin+location.pathname}});
   if(r.error)auth.err=r.error.message;else if(!r.data.session){auth={email,msg:'Account creato. Controlla la tua email e clicca il link di conferma, poi accedi.'}}}
@@ -547,13 +585,175 @@ function teamView(){return header('Persone','Team')+BODY+`<div class="grid">${Ob
  ${can.manageTeam(k)?`<button class="btn ghost sm" style="width:100%;margin-top:12px" onclick="modal={type:'addMember',team:'${k}'};render()">+ Aggiungi membro</button>`:''}</div>`).join('')}</div>`}
 
 /* ---------- ADMIN ---------- */
-function adminView(){return header('Amministrazione','Utenti e permessi',`<button class="btn" onclick="modal={type:'newUser'};render()">+ Nuovo utente</button>`)+BODY+`
+function adminView(){if(!isSA())return header('Amministrazione','Utenti e permessi')+BODY+accessCards(Object.keys(TEAMS).filter(canGrant));
+ return header('Amministrazione','Utenti e permessi',`<button class="btn" onclick="modal={type:'newUser'};render()">+ Nuovo utente</button>`)+BODY+`
  <div class="card" style="overflow:auto"><table><tr><th>UTENTE</th><th>EMAIL</th><th>RUOLO</th><th>TEAM</th><th></th></tr>${S.users.map(u=>`<tr><td><div style="display:flex;gap:10px;align-items:center">${av(u)}${esc(u.name)}</div></td><td>${esc(u.email)}</td>
  <td><select onchange="setUser('${u.id}','role',this.value)" ${u.id===me.id?'disabled':''}>${Object.entries(ROLES).map(([k,r])=>`<option value="${k}" ${u.role===k?'selected':''}>${r.l}</option>`).join('')}</select></td>
  <td><select onchange="setUser('${u.id}','team',this.value||null)" ${['guest','superadmin'].includes(u.role)?'disabled':''}><option value="">—</option>${Object.entries(TEAMS).map(([k,T])=>`<option value="${k}" ${u.team===k?'selected':''}>${T.name}</option>`).join('')}</select></td>
  <td>${u.id!==me.id?`<button class="x-btn" onclick="delUser('${u.id}')">Elimina</button>`:''}</td></tr>`).join('')}</table></div>
+ ${accessCards(Object.keys(TEAMS))}
  <div class="card pad" style="margin-top:20px;overflow:auto"><h3 style="margin-bottom:10px">Matrice permessi</h3><table><tr><th>AZIONE</th><th>OSPITE</th><th>MEMBRO</th><th>TEAM LEAD</th><th>SUPERADMIN</th></tr>
- ${[['Timeline, panoramica, calendario','✓','✓','✓','✓'],['File condivisi con tutta la crew','✓','✓','✓','✓'],['File riservati del team','—','Proprio team','Proprio team','Tutti'],['Caricare file','—','✓','✓','✓'],['Creare task (proprio team o altri team)','—','✓','✓','✓'],['Assegnare task a persone','—','Solo prendere in carico','Proprio team','Tutte'],['Modificare task','—','Assegnate a sé','Proprio team','Tutte'],['Commentare','—','✓','✓','✓'],['Modificare i propri commenti','—','✓','✓','✓'],['Eliminare commenti','—','Propri','Propri','Tutti'],['Creare eventi calendario','—','—','✓','✓'],['Note private e proposte OdG','—','Proprio team','Proprio team','Tutti'],['Creare meeting e punti fissi','—','—','✓','✓'],['Gestire membri team','—','—','Proprio team','Tutti'],['Gestire utenti e ruoli','—','—','—','✓']].map(r=>`<tr>${r.map((c,i)=>i?`<td>${c}</td>`:`<td><b>${c}</b></td>`).join('')}</tr>`).join('')}</table></div>`}
+ ${[['Timeline, panoramica, calendario','✓','✓','✓','✓'],['File condivisi con tutta la crew','✓','✓','✓','✓'],['File riservati del team','—','Proprio team','Proprio team','Tutti'],['Caricare file','—','✓','✓','✓'],['Creare task (proprio team o altri team)','—','✓','✓','✓'],['Assegnare task a persone','—','Solo prendere in carico','Proprio team','Tutte'],['Modificare task','—','Assegnate a sé','Proprio team','Tutte'],['Commentare','—','✓','✓','✓'],['Modificare i propri commenti','—','✓','✓','✓'],['Eliminare commenti','—','Propri','Propri','Tutti'],['Creare eventi calendario','—','—','✓','✓'],['Note private e proposte OdG','—','Proprio team','Proprio team','Tutti'],['Creare meeting e punti fissi','—','—','✓','✓'],['Gestire membri team','—','—','Proprio team','Tutti'],['Aree di lavoro e fogli del team','—','Proprio team + accessi concessi','Tutte le aree','Tutte le aree'],['Concedere accesso a un\'area team','—','—','Proprio team','Tutte le aree'],['Tesoreria (password)','—','Area Partner + password','Con password','Con password'],['Gestire utenti e ruoli','—','—','—','✓']].map(r=>`<tr>${r.map((c,i)=>i?`<td>${c}</td>`:`<td><b>${c}</b></td>`).join('')}</tr>`).join('')}</table></div>`}
+
+/* ================= AREE TEAM E FOGLI ================= */
+const STATI_PARTNER=['Da contattare','In trattativa','Confermato','Contratto firmato','Pagato'];
+const SHEETS={
+ speaker:{team:'SP',ic:'🎤',t:'Proposta e selezione speaker',desc:'Chi proponiamo, a che punto è la selezione, chi è confermato.',
+  cols:[{k:'n',l:'Nome',w:170},{k:'ruolo',l:'Ruolo / professione',w:170},{k:'talk',l:'Tema del talk',w:210},{k:'by',l:'Proposto da',t:'person',w:150},
+   {k:'st',l:'Stato',t:'sel',o:['Proposto','In valutazione','Contattato','Confermato','Scartato'],w:130},{k:'voto',l:'Voto (1-5)',t:'num',w:90},
+   {k:'cont',l:'Contatto',w:170},{k:'link',l:'Link / sito',t:'url',w:170},{k:'note',l:'Note',w:240}]},
+ piano:{team:'MK',ic:'🗓',t:'Piano editoriale',desc:'Cosa pubblichiamo, dove, quando e chi se ne occupa.',
+  cols:[{k:'d',l:'Data',t:'date',w:130},{k:'canale',l:'Canale',t:'sel',o:['Instagram','Facebook','LinkedIn','TikTok','YouTube','Sito / newsletter'],w:140},
+   {k:'fmt',l:'Formato',t:'sel',o:['Post','Carosello','Reel','Story','Video','Articolo'],w:120},{k:'tit',l:'Titolo / contenuto',w:260},{k:'own',l:'Responsabile',t:'person',w:150},
+   {k:'st',l:'Stato',t:'sel',o:['Idea','In lavorazione','Da approvare','Pianificato','Pubblicato'],w:130},{k:'note',l:'Note',w:240}]},
+ insights:{team:'MK',ic:'📈',t:'Statistiche canali (insights)',desc:'Numeri periodici dei nostri canali social.',
+  cols:[{k:'d',l:'Data rilevazione',t:'date',w:140},{k:'canale',l:'Canale',t:'sel',o:['Instagram','Facebook','LinkedIn','TikTok','YouTube','Sito / newsletter'],w:140},
+   {k:'fol',l:'Follower / iscritti',t:'num',w:130},{k:'reach',l:'Copertura',t:'num',w:110},{k:'imp',l:'Impression',t:'num',w:110},{k:'eng',l:'Engagement %',t:'num',w:120},
+   {k:'post',l:'Post pubblicati',t:'num',w:120},{k:'note',l:'Note',w:240}]},
+ partner:{team:'PA',ic:'🤝',t:'Elenco partner',desc:'Partner divisi per categoria: Platinum, Gold, Silver, In kind.',
+  group:{k:'cat',o:['Platinum','Gold','Silver','In kind']},sum:'val',
+  cols:[{k:'n',l:'Azienda / partner',w:200},{k:'cat',l:'Categoria',t:'sel',o:['Platinum','Gold','Silver','In kind'],w:110},{k:'ref',l:'Referente',w:150},{k:'cont',l:'Email / telefono',w:180},
+   {k:'val',l:'Valore €',t:'eur',w:110},{k:'st',l:'Stato',t:'sel',o:STATI_PARTNER,w:150},{k:'own',l:'Seguito da',t:'person',w:150},{k:'note',l:'Note / contropartite',w:240}]},
+ tesoreria:{team:'PA',ic:'🔒',t:'Tesoreria interna',desc:'Entrate e uscite. Accesso protetto da password.',locked:true,tes:true,
+  cols:[{k:'d',l:'Data',t:'date',w:130},{k:'desc',l:'Descrizione',w:260},{k:'tipo',l:'Tipo',t:'sel',o:['Entrata','Uscita'],w:110},
+   {k:'cat',l:'Categoria',t:'sel',o:['Sponsorizzazione','Biglietti','Allestimento','Marketing','Ospitalità','Servizi','Altro'],w:150},
+   {k:'imp',l:'Importo €',t:'eur',w:120},{k:'st',l:'Stato',t:'sel',o:['Previsto','Effettuato'],w:120},{k:'doc',l:'Documento / link',t:'url',w:170},{k:'note',l:'Note',w:220}]},
+ eventi:{team:'OP',ic:'🎪',t:'Panoramica eventi',desc:'TEDxConnect, TEDxGala e TEDx Main Event: cosa serve per ognuno.',
+  group:{k:'ev',o:['TEDxConnect','TEDxGala','TEDx Main Event']},sum:'bud',
+  cols:[{k:'ev',l:'Evento',t:'sel',o:['TEDxConnect','TEDxGala','TEDx Main Event'],w:150},{k:'voce',l:'Attività / voce',w:240},{k:'d',l:'Data',t:'date',w:130},{k:'luogo',l:'Luogo',w:160},
+   {k:'own',l:'Responsabile',t:'person',w:150},{k:'st',l:'Stato',t:'sel',o:['Da pianificare','In corso','Confermato','Fatto'],w:130},{k:'bud',l:'Budget €',t:'eur',w:110},{k:'note',l:'Note',w:240}]},
+ inventario:{team:'OP',ic:'📦',t:'Inventario',desc:'Materiali e attrezzature: dove sono, chi li ha, in che stato.',
+  cols:[{k:'n',l:'Articolo',w:210},{k:'cat',l:'Categoria',t:'sel',o:['Audio / video','Luci','Arredi','Allestimento','Merchandising','Cancelleria','Altro'],w:140},{k:'qta',l:'Quantità',t:'num',w:90},
+   {k:'pos',l:'Posizione',w:170},{k:'st',l:'Stato',t:'sel',o:['Disponibile','In uso','In prestito','Da acquistare','Da riparare'],w:130},{k:'own',l:'Responsabile',t:'person',w:150},{k:'note',l:'Note',w:240}]}
+};
+const TEAM_SHEETS=k=>Object.keys(SHEETS).filter(s=>SHEETS[s].team===k);
+const teamAccess=k=>me.role!=='guest'&&(isSA()||me.role==='lead'||me.team===k||(me.access||[]).includes(k));
+const canGrant=k=>isSA()||isLead(k);
+const eur=n=>Number(n||0).toLocaleString('it-IT',{style:'currency',currency:'EUR',maximumFractionDigits:2});
+const nz=v=>{const n=Number(v);return v===''||v==null||isNaN(n)?0:n};
+let curTeam=null,teamTab='dash',shq='';
+let tesOK=false;try{tesOK=!CLOUD&&sessionStorage.getItem('tedxl2_tes')==='1'}catch(e){}
+const TES_HASH='ca52a2019a40179a0b6ab3fe25ab779825eedff5b12089ce354db8690b407032';
+function sha256(s){const K=[],H=[];let p=2;const isP=n=>{for(let i=2;i*i<=n;i++)if(n%i===0)return false;return true};
+ const fr=x=>((x-Math.floor(x))*4294967296)|0;
+ for(let n=2,i=0;i<64;n++)if(isP(n)){if(i<8)H[i]=fr(Math.pow(n,.5));K[i]=fr(Math.pow(n,1/3));i++}
+ const b=unescape(encodeURIComponent(s)),l=b.length*8,w=new Array(((((l+64)>>9)<<4)+16)).fill(0);
+ for(let i=0;i<b.length;i++)w[i>>2]|=b.charCodeAt(i)<<(24-(i%4)*8);
+ w[l>>5]|=0x80<<(24-l%32);w[(((l+64)>>9)<<4)+15]=l;
+ const rr=(x,n)=>(x>>>n)|(x<<(32-n));
+ for(let j=0;j<w.length;j+=16){const a=w.slice(j,j+16),t=H.slice();
+  for(let i=0;i<64;i++){if(i>=16){const s0=rr(a[i-15],7)^rr(a[i-15],18)^(a[i-15]>>>3),s1=rr(a[i-2],17)^rr(a[i-2],19)^(a[i-2]>>>10);a[i]=(a[i-16]+s0+a[i-7]+s1)|0}
+   const S1=rr(t[4],6)^rr(t[4],11)^rr(t[4],25),ch=(t[4]&t[5])^(~t[4]&t[6]),t1=(t[7]+S1+ch+K[i]+a[i])|0,S0=rr(t[0],2)^rr(t[0],13)^rr(t[0],22),mj=(t[0]&t[1])^(t[0]&t[2])^(t[1]&t[2]),t2=(S0+mj)|0;
+   t[7]=t[6];t[6]=t[5];t[5]=t[4];t[4]=(t[3]+t1)|0;t[3]=t[2];t[2]=t[1];t[1]=t[0];t[0]=(t1+t2)|0}
+  for(let i=0;i<8;i++)H[i]=(H[i]+t[i])|0}
+ return H.map(x=>('00000000'+(x>>>0).toString(16)).slice(-8)).join('')}
+
+function openTeam(k,tab){if(!teamAccess(k))return;curTeam=k;teamTab=tab||'dash';shq='';view='teamhub';rv=null;q='';render()}
+function setTeamTab(t){teamTab=t;shq='';rv=null;render()}
+
+/* ---- pagina del team: in alto dashboard e schede, sotto il lavoro ---- */
+function teamHubView(){
+ const k=curTeam,T=TEAMS[k];
+ if(!k||!T||!teamAccess(k))return header('Aree team','Area team')+BODY+`<div class="card pad"><div class="empty">Non hai accesso a quest'area. Chiedi al team lead o al superadmin.</div></div>`;
+ const ts=S.tasks.filter(t=>t.team===k),open=ts.filter(t=>taskState(t).k!=='end'),t7=iso(new Date(TODAY.getTime()+7*864e5));
+ const stat=`<div class="card stats"><div class="s"><b>${open.length}</b>Task da fare</div><div class="s"><b>${ts.filter(t=>taskState(t).k==='run').length}</b>In corso</div><div class="s"><b>${open.filter(t=>t.e<=t7).length}</b>In scadenza (7 giorni)</div><div class="s"><b>${ts.filter(t=>!t.own&&taskState(t).k!=='end').length}</b>Da assegnare</div><div class="s"><b>${S.users.filter(u=>u.team===k).length}</b>Persone</div></div>`;
+ const sh=TEAM_SHEETS(k),tabs=[['dash','◫ Dashboard'],...sh.map(s=>[s,SHEETS[s].ic+' '+SHEETS[s].t])];
+ if(teamTab!=='dash'&&!sh.includes(teamTab))teamTab='dash';
+ const btn=(can.create()?`<button class="btn" onclick="openTask(null,'${k}')">+ Nuova task</button>`:'')+(canGrant(k)?`<button class="btn ghost" onclick="go('admin')">Gestisci accessi</button>`:'');
+ const head=`<div class="crumb">TEDxLerici HUB / Aree team</div><div class="head"><h1><span class="dot" style="width:12px;height:12px;background:${T.c};display:inline-block;margin-right:10px"></span>Team ${T.name}</h1><div style="display:flex;gap:8px">${btn}</div></div>`;
+ return head+stat+`<div class="tabs">${tabs.map(([id,l])=>`<button class="${teamTab===id?'on':''}" onclick="setTeamTab('${id}')">${l}</button>`).join('')}</div>`+BODY+(teamTab==='dash'?teamDash(k,open):sheetView(teamTab))}
+
+function teamDash(k,open){
+ const T=TEAMS[k],list=[...open].sort((a,b)=>a.e.localeCompare(b.e)),sh=TEAM_SHEETS(k);
+ const ev=S.events.filter(e=>e.d>=iso(TODAY)&&(e.team===k||!e.team)).sort((a,b)=>a.d.localeCompare(b.d)).slice(0,4);
+ const people=S.users.filter(u=>u.team===k),extra=S.users.filter(u=>u.team!==k&&u.role==='member'&&(u.access||[]).includes(k));
+ return `<div class="two"><div>
+  <div class="card" style="overflow:hidden;margin-bottom:20px"><div class="pad" style="padding:16px 18px 8px"><h3>Task da fare</h3><p style="color:var(--muted);font-size:12px;margin-top:3px">Ordinate per scadenza. Clic su una task per aprirla.</p></div>
+   ${list.slice(0,8).map(taskRow).join('')||'<div class="empty">Nessuna task aperta per questo team.</div>'}
+   ${list.length>8?`<div style="padding:10px 18px;color:var(--muted);font-size:12px">… e altre ${list.length-8}. <button class="x-btn" style="color:var(--info-c)" onclick="taskTab='${isSA()?'all':'team'}';go('tasks')">Vedi tutte le task</button></div>`:''}</div>
+  <div class="card pad"><h3>Lavoro da eseguire</h3><p style="color:var(--muted);font-size:12px;margin:3px 0 10px">I fogli del team: tutti i membri possono modificarli.</p>
+   <div class="grid" style="grid-template-columns:repeat(auto-fill,minmax(220px,1fr));gap:12px">${sh.map(s=>{const d=SHEETS[s],n=(d.locked&&!tesOK)?null:S.sheet_rows.filter(r=>r.sheet===s).length;
+    return `<div class="card pad shcard" style="cursor:pointer;border-left:3px solid ${T.c}" onclick="setTeamTab('${s}')"><div style="font-size:22px">${d.ic}</div><b style="display:block;margin:6px 0 2px">${d.t}</b><small style="color:var(--muted)">${d.desc}</small><div style="margin-top:8px;font-size:12px;color:var(--ink2)">${n===null?'🔒 Richiede password':n+' '+(n===1?'riga':'righe')}</div></div>`}).join('')}</div></div>
+  </div><div>
+  <div class="card pad" style="margin-bottom:20px"><h3>Prossimi eventi</h3>${ev.map(e=>`<div class="li" style="cursor:pointer" onclick="openEvent(${e.id})"><div style="text-align:center;width:40px"><b style="font-size:18px">${new Date(e.d).getDate()}</b><small>${new Date(e.d).toLocaleDateString('it-IT',{month:'short'})}</small></div><div style="flex:1"><b>${esc(e.t)}</b><small>${e.h} ${e.where?'· '+esc(e.where):''}</small></div></div>`).join('')||'<div class="empty">Nessun evento in arrivo.</div>'}</div>
+  <div class="card pad"><h3>Persone</h3>${people.map(u=>`<div class="li">${av(u)}<div style="flex:1"><b>${esc(u.name)}</b><small>${ROLES[u.role].l}</small></div></div>`).join('')||'<div class="empty">Nessun membro nel team.</div>'}
+   ${extra.length?`<p style="font-size:11px;letter-spacing:.1em;color:var(--muted);margin:12px 0 2px">CON ACCESSO CONCESSO</p>${extra.map(u=>`<div class="li">${av(u)}<div style="flex:1"><b>${esc(u.name)}</b><small>${u.team?TEAMS[u.team].name:'Senza team'}</small></div></div>`).join('')}`:''}</div>
+  </div></div>`}
+
+/* ---- foglio ---- */
+function sheetRows(key){return S.sheet_rows.filter(r=>r.sheet===key)}
+function sumOf(key,gv){const sh=SHEETS[key],rs=sheetRows(key).filter(r=>!sh.group||gv==null||(r.d[sh.group.k]||'')===gv||(gv==='Altro'&&!sh.group.o.includes(r.d[sh.group.k])));
+ if(sh.tes){const i=rs.filter(r=>r.d.tipo==='Entrata').reduce((a,r)=>a+nz(r.d.imp),0),o=rs.filter(r=>r.d.tipo==='Uscita').reduce((a,r)=>a+nz(r.d.imp),0);return {in:i,out:o,bal:i-o}}
+ return rs.reduce((a,r)=>a+nz(r.d[sh.sum]),0)}
+function updateSums(key){const sh=SHEETS[key];document.querySelectorAll('[data-sum]').forEach(el=>{const [k,g]=el.dataset.sum.split('|');if(k!==key)return;
+ if(sh.tes){const s=sumOf(key);el.textContent=eur(s[g])}else el.textContent=eur(sumOf(key,g==='*'?null:g))})}
+function cellHtml(sh,c,r){const v=r.d[c.k]??'',on=`onchange="setCell(${r.id},'${c.k}',this.value)"`,t=c.t||'text';
+ if(t==='sel')return `<select ${on}><option value=""></option>${[...(v&&!c.o.includes(v)?[v]:[]),...c.o].map(o=>`<option ${v===o?'selected':''}>${esc(o)}</option>`).join('')}</select>`;
+ if(t==='person'){const us=S.users.filter(u=>u.role!=='guest'),gone=v&&!us.some(u=>u.id===v);
+  return `<select ${on}><option value=""></option>${gone?`<option value="${esc(v)}" selected>(utente rimosso)</option>`:''}${us.map(u=>`<option value="${esc(u.id)}" ${v===u.id?'selected':''}>${esc(u.name)}</option>`).join('')}</select>`}
+ if(t==='date')return `<input type="date" value="${esc(v)}" ${on}>`;
+ if(t==='num'||t==='eur')return `<input type="number" step="any" inputmode="decimal" value="${esc(v)}" ${on}>`;
+ if(t==='url')return `<div class="cwl"><input value="${esc(v)}" placeholder="https://" ${on}>${/^https?:\/\//i.test(v)?`<a href="${esc(v)}" target="_blank" rel="noopener" title="Apri">↗</a>`:''}</div>`;
+ return `<input value="${esc(v)}" ${on}>`}
+function sheetTable(key,rows,gv){const sh=SHEETS[key];
+ return `<div class="shwrap"><table class="sheet" style="width:${sh.cols.reduce((a,c)=>a+(c.w||140),76)}px"><colgroup><col style="width:36px">${sh.cols.map(c=>`<col style="width:${c.w||140}px">`).join('')}<col style="width:40px"></colgroup><thead><tr><th>#</th>${sh.cols.map(c=>`<th>${c.l}</th>`).join('')}<th></th></tr></thead><tbody>
+ ${rows.map((r,i)=>`<tr><td class="rn">${i+1}</td>${sh.cols.map(c=>`<td>${cellHtml(sh,c,r)}</td>`).join('')}<td><button class="ico" title="Elimina riga" onclick="delRow(${r.id})">${trashSvg}</button></td></tr>`).join('')||`<tr><td colspan="${sh.cols.length+2}" class="empty" style="padding:18px">Nessuna riga.</td></tr>`}
+ </tbody></table></div>`}
+function sheetView(key){const sh=SHEETS[key];if(!sh)return '';
+ if(CLOUD&&!HAS_SHEETS)return `<div class="info">I fogli di lavoro richiedono la migrazione SQL 003: ${isSA()?'esegui il file <b>db/migrations/003_aree_team_e_fogli.sql</b> nel SQL Editor di Supabase.':'chiedi al superadmin di eseguirla.'}</div>`;
+ if(sh.locked&&!tesOK)return `<div class="card pad" style="max-width:420px;margin:30px auto;text-align:center"><div style="font-size:34px">🔒</div><h3 style="margin:8px 0 4px">${sh.t}</h3><p style="color:var(--muted);font-size:13px;margin-bottom:14px">Inserisci la password della tesoreria per aprire il foglio.</p>
+  <input type="password" id="tpw" placeholder="Password" autocomplete="off" onkeydown="if(event.key==='Enter')unlockTes()"><div class="lock" id="tpe" style="display:none;margin-top:10px;color:var(--red)"></div><button class="btn" style="width:100%;margin-top:12px" onclick="unlockTes()">Sblocca</button></div>`;
+ const ql=shq.trim().toLowerCase(),all=sheetRows(key),match=r=>!ql||Object.entries(r.d).some(([k,v])=>{const c=sh.cols.find(x=>x.k===k);const s=c&&c.t==='person'?U(v).name:v;return String(s??'').toLowerCase().includes(ql)});
+ const tool=`<div style="padding:0 0 12px;display:flex;gap:8px;flex-wrap:wrap;align-items:center"><input id="shs" style="max-width:260px" placeholder="🔍 Cerca nel foglio…" value="${esc(shq)}" oninput="shq=this.value;render();setTimeout(()=>{const e=document.getElementById('shs');if(e){e.focus();e.setSelectionRange(99,99)}})">
+  <span style="color:var(--muted);font-size:12px">${all.length} ${all.length===1?'riga':'righe'}</span><span style="flex:1"></span>
+  <button class="btn ghost sm" onclick="exportSheet('${key}')">⬇ Esporta per Excel (.csv)</button>${sh.locked?`<button class="btn ghost sm" onclick="lockTes()">🔒 Blocca</button>`:''}${sh.group?'':`<button class="btn sm" onclick="addRow('${key}')">+ Aggiungi riga</button>`}</div>`;
+ let body='';
+ if(sh.tes)body=`<div class="grid" style="grid-template-columns:repeat(3,1fr);margin-bottom:14px"><div class="card pad kpi"><small>Entrate</small><b data-sum="${key}|in">${eur(sumOf(key).in)}</b></div><div class="card pad kpi"><small>Uscite</small><b data-sum="${key}|out">${eur(sumOf(key).out)}</b></div><div class="card pad kpi"><small>Saldo</small><b data-sum="${key}|bal">${eur(sumOf(key).bal)}</b></div></div>`+sheetTable(key,all.filter(match).sort((a,b)=>String(a.d.d||'9').localeCompare(String(b.d.d||'9'))));
+ else if(sh.group){const g=sh.group,known=g.o,other=all.filter(r=>!known.includes(r.d[g.k]));
+  body=[...known,...(other.length?['Altro']:[])].map(gv=>{const rs=(gv==='Altro'?other:all.filter(r=>r.d[g.k]===gv)).filter(match);
+   return `<div class="card pad" style="margin-bottom:16px"><div style="display:flex;align-items:center;gap:10px;margin-bottom:10px"><h3>${esc(gv)}</h3><span class="chip" style="background:var(--soft);color:var(--ink2)">${rs.length}</span><span style="color:var(--muted);font-size:12px">Totale <b data-sum="${key}|${esc(gv)}" style="color:var(--ink)">${eur(sumOf(key,gv))}</b></span><span style="flex:1"></span><button class="btn sm" onclick="addRow('${key}','${gv==='Altro'?'':gv}')">+ Aggiungi</button></div>${sheetTable(key,rs)}</div>`}).join('')}
+ else body=sheetTable(key,all.filter(match));
+ return `<div class="sheetbox"><p style="color:var(--muted);font-size:13px;margin-bottom:12px">${sh.desc} Le modifiche si salvano da sole quando esci dal campo.</p>${tool}${body}</div>`}
+
+/* ---- azioni sui fogli ---- */
+function mutRows(apply){apply();if(CLOUD){syncing=syncing.then(apply);sync()}else save()}
+function addRow(key,gv){const sh=SHEETS[key];if(!teamAccess(sh.team))return;const row={id:nid(S.sheet_rows),sheet:key,team:sh.team,d:{}};
+ if(sh.group&&gv)row.d[sh.group.k]=gv;if(sh.tes)row.d.d=iso(TODAY);if(key==='piano'||key==='insights')row.d.d=iso(TODAY);
+ mutRows(()=>{if(!S.sheet_rows.some(x=>x.id===row.id))S.sheet_rows.push(row)});render();
+ setTimeout(()=>{const tr=[...document.querySelectorAll('.sheet tbody tr')].pop(),i=tr&&tr.querySelector('td:nth-child(2) input,td:nth-child(2) select');if(i){if(tr.scrollIntoView)tr.scrollIntoView({block:'nearest'});i.focus()}})}
+function delRow(id){const r=S.sheet_rows.find(x=>x.id===id);if(!r||!teamAccess(r.team))return;if(!confirm('Eliminare questa riga?'))return;
+ mutRows(()=>{S.sheet_rows=S.sheet_rows.filter(x=>x.id!==id)});render()}
+function setCell(id,k,raw){const r0=S.sheet_rows.find(x=>x.id===id);if(!r0||!teamAccess(r0.team))return;const sh=SHEETS[r0.sheet],c=sh.cols.find(x=>x.k===k);if(!c)return;
+ const val=(c.t==='num'||c.t==='eur')?(raw===''||isNaN(Number(raw))?'':Number(raw)):raw;
+ mutRows(()=>{const r=S.sheet_rows.find(x=>x.id===id);if(r)r.d={...r.d,[k]:val}});
+ if(sh.group&&sh.group.k===k||sh.tes&&k==='tipo')render();updateSums(r0.sheet)}
+async function unlockTes(){const el=document.getElementById('tpw'),pw=el?el.value:'',er=document.getElementById('tpe');
+ const bad=m=>{if(er){er.style.display='block';er.textContent=m}};
+ if(!pw)return bad('Inserisci la password.');
+ if(CLOUD){if(!HAS_SHEETS)return;const r=await sb.rpc('tes_unlock',{pw});if(r.error)return bad(r.error.message);if(r.data!==true)return bad('Password errata, oppure non hai accesso all\'area Partner.');
+  tesOK=true;try{await load()}catch(e){return bad(e.message)}render();return}
+ if(sha256('hub-tes:'+pw)!==TES_HASH)return bad('Password errata.');
+ tesOK=true;try{sessionStorage.setItem('tedxl2_tes','1')}catch(e){}render()}
+async function lockTes(){tesOK=false;try{sessionStorage.removeItem('tedxl2_tes')}catch(e){}
+ if(CLOUD){try{await sb.rpc('tes_lock');await load()}catch(e){}}render()}
+function exportSheet(key){const sh=SHEETS[key],cell=(c,r)=>{let v=r.d[c.k]??'';if(c.t==='person')v=v?U(v).name:'';if(c.t==='num'||c.t==='eur')v=v===''?'':String(v).replace('.',',');
+  v=String(v).replace(/"/g,'""');return /[;"\n\r]/.test(v)?`"${v}"`:v};
+ const rows=sheetRows(key),csv='﻿'+[sh.cols.map(c=>c.l).join(';'),...rows.map(r=>sh.cols.map(c=>cell(c,r)).join(';'))].join('\r\n');
+ const a=document.createElement('a');a.href=URL.createObjectURL(new Blob([csv],{type:'text/csv;charset=utf-8'}));a.download=`${sh.t.replace(/[^\w]+/g,'_')}.csv`;document.body.appendChild(a);a.click();setTimeout(()=>{URL.revokeObjectURL(a.href);a.remove()},500)}
+
+/* ---- accessi alle aree team (Utenti e permessi) ---- */
+async function toggleAccess(uid,tm,on){
+ if(!canGrant(tm)||!['MK','OP','PA','SP'].includes(tm))return;
+ if(!CLOUD){const u=S.users.find(x=>x.id===uid);if(!u)return;const a=new Set(u.access||[]);on?a.add(tm):a.delete(tm);u.access=[...a];if(me.id===uid)me=u;save();render();return}
+ if(!HAS_ACC)return alert('Serve la migrazione SQL 003 (cartella db/migrations).');
+ syncing=syncing.then(async()=>{const r=await sb.rpc('set_team_access',{uid,tm,allow:on});if(r.error)alert(r.error.message);try{await load();me=S.users.find(u=>u.id===me.id)||me}catch(e){alert(e.message)}render()});return syncing}
+function accessCards(teams){
+ return `<div style="margin-top:20px"><h3 style="margin-bottom:4px">Accesso alle aree dei team</h3><p style="color:var(--muted);font-size:13px;margin-bottom:12px">Ogni persona vede l'area del proprio team. Team lead e superadmin vedono tutte le aree. Qui concedi l'accesso a persone di altri team.</p>
+ ${CLOUD&&!HAS_ACC?`<div class="info">Per gestire gli accessi esegui la migrazione SQL 003 (cartella db/migrations).</div>`:''}
+ <div class="grid">${teams.map(k=>{const T=TEAMS[k],elig=S.users.filter(u=>u.role==='member'&&u.team!==k);
+  return `<div class="card pad"><h3 style="display:flex;gap:8px;align-items:center"><span class="dot" style="width:10px;height:10px;background:${T.c}"></span>Area ${T.name}</h3>
+  <small style="color:var(--muted)">${S.users.filter(u=>u.team===k).length} membri · ${S.users.filter(u=>u.role==='lead'||u.role==='superadmin').length} lead/superadmin con accesso totale</small>
+  <div style="margin-top:10px">${elig.map(u=>`<label class="li" style="cursor:pointer">${av(u)}<div style="flex:1"><b>${esc(u.name)}</b><small>${u.team?TEAMS[u.team].name:'Senza team'}</small></div><input type="checkbox" style="width:auto" ${(u.access||[]).includes(k)?'checked':''} onchange="toggleAccess('${esc(u.id)}','${k}',this.checked)"></label>`).join('')||'<div class="empty">Nessun altro membro a cui concedere l\'accesso.</div>'}</div></div>`}).join('')}</div></div>`}
 
 /* ================= MODALI ================= */
 const mbg=(inner,cls='')=>{const a=inner.indexOf('</h2>'),b=inner.lastIndexOf('<div class="actions"');
@@ -648,8 +848,8 @@ function modalView(){
 /* ================= AZIONI ================= */
 function go(v){view=v;rv=null;q='';render()}
 function closeM(){modal=null;render()}
-function openTask(id){if(!id&&!can.create())return;
- const t=id?JSON.parse(JSON.stringify(S.tasks.find(x=>x.id===id))):{t:'',team:me.team||'MK',req:null,own:me.role==='member'?me.id:null,s:iso(TODAY),e:iso(new Date(TODAY.getTime()+14*864e5)),p:0,dep:null,asg:[],c:[]};
+function openTask(id,team){if(!id&&!can.create())return;
+ const t=id?JSON.parse(JSON.stringify(S.tasks.find(x=>x.id===id))):{t:'',team:team||me.team||'MK',req:null,own:me.role==='member'&&(!team||team===me.team)?me.id:null,s:iso(TODAY),e:iso(new Date(TODAY.getTime()+14*864e5)),p:0,dep:null,asg:[],c:[]};
  modal={type:'task',t};render()}
 function setTheme(t){if(modal&&modal.type==='settings')setsCollect();theme=t==='dark'?'dark':'light';try{localStorage.setItem('tedx_theme',theme)}catch(e){}document.documentElement.dataset.theme=theme;render()}
 function collect(){const t=modal.t,g=id=>document.getElementById(id);
