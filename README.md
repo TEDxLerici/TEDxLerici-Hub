@@ -14,7 +14,7 @@ Si possono rilanciare senza danni. Senza la 002 / 003 l'app funziona comunque, m
 
 Quando si crea un evento (o un meeting) l'app chiama `api/send-event.js`, che invia una email con titolo, data, ora, luogo
 (in presenza / online con link della call) e descrizione, più un invito `.ics` per il calendario.
-Destinatari: se l'evento è per "Tutta la crew" tutte le persone dei 4 team; se è per un team (o per i team di un meeting) solo le persone di quel team. Chi non ha un team e gli ospiti non ricevono nulla; chi crea l'evento riceve la copia se appartiene a quel team. Le persone senza email nel profilo vengono segnalate all'organizzatore.
+Destinatari: se l'evento è per "Tutta la crew" tutte le persone dei 4 team; se è per un team (o per i team di un meeting) solo le persone di quel team. Chi non ha un team e gli ospiti non ricevono nulla. Le persone senza email nel profilo vengono segnalate all'organizzatore. L'invito e il file `.ics` riportano chi ha creato l'evento (note e organizzatore del calendario). Chi crea l'evento non riceve l'invito ma, sempre, un promemoria a parte con i dettagli e l'elenco di chi è stato invitato.
 Li ricava il server dal database: dal browser non si possono inserire indirizzi.
 
 Su Vercel, *Project → Settings → Environment Variables* (poi *Redeploy*):
