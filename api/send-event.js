@@ -51,8 +51,30 @@ function ics(ev) {
     'END:VEVENT', 'END:VCALENDAR'].join('\r\n');
 }
 
+// Controllo di configurazione: apri /api/send-event?check. Non mostra mai la chiave e non invia email reali
+// (la prova usa l'indirizzo di test delivered@resend.dev di Resend).
+async function diagnose(res) {
+  const key = process.env.RESEND_API_KEY || '', from = process.env.MAIL_FROM || '';
+  const out = {
+    RESEND_API_KEY: !key ? 'MANCANTE' : { lunghezza: key.length, iniziaCon_re_: key.startsWith('re_'),
+      spaziOVirgoletteNelValore: /\s|["']/.test(key), formatoPlausibile: /^re_[A-Za-z0-9_]{20,}$/.test(key) },
+    MAIL_FROM: from || 'MANCANTE',
+    formatoMailFrom: /^[^<>]+<[^\s@<>]+@[^\s@<>]+\.[^\s@<>]+>$|^[^\s@<>]+@[^\s@<>]+\.[^\s@<>]+$/.test(from.trim()) ? 'ok' : 'non valido',
+  };
+  if (key && from) {
+    try {
+      const r = await fetch('https://api.resend.com/emails', { method: 'POST', headers: { Authorization: 'Bearer ' + key, 'Content-Type': 'application/json' },
+        body: JSON.stringify({ from, to: ['delivered@resend.dev'], subject: 'Prova configurazione TEDxLerici HUB', text: 'Prova' }) });
+      let j = {}; try { j = await r.json() } catch (e) {}
+      out.resend = { stato: r.status, esito: r.ok ? 'chiave e mittente accettati' : (j.message || j.name || 'rifiutato') };
+    } catch (e) { out.resend = { errore: e.message } }
+  }
+  return res.status(200).json(out);
+}
+
 module.exports = async function handler(req, res) {
   res.setHeader('Cache-Control', 'no-store');
+  if (req.method === 'GET' && /[?&]check(=|&|$)/.test(req.url || '')) return diagnose(res);
   if (req.method !== 'POST') return res.status(405).json({ error: 'Metodo non consentito' });
   const apiKey = process.env.RESEND_API_KEY, from = process.env.MAIL_FROM;
   if (!apiKey || !from) return res.status(501).json({ error: 'Invio email non configurato' });
