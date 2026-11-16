@@ -43,7 +43,7 @@ aside{width:240px;background:var(--card);border-right:1px solid var(--line);padd
 .av{width:32px;height:32px;border-radius:50%;display:grid;place-items:center;font-weight:600;font-size:11px;flex-shrink:0}
 .av.sm{width:24px;height:24px;font-size:9px}
 .av.lg{width:64px;height:64px;font-size:20px}
-.user .meta{flex:1;min-width:0}.user .meta b{display:block;font-size:13px;white-space:nowrap;overflow:hidden;text-overflow:ellipsis}.user .meta small{color:var(--muted);font-size:11px}
+.user .meta{flex:1;min-width:0}.user .meta b{display:block;font-size:13px;line-height:1.2;white-space:normal;overflow-wrap:anywhere}.user .mr{display:flex;flex-wrap:wrap;align-items:center;gap:3px 6px;margin-top:4px}.user .meta small{color:var(--muted);font-size:11px}
 .role{display:inline-block;font-size:10px;font-weight:600;padding:2px 7px;border-radius:20px}
 .chip{display:inline-flex;gap:5px;align-items:center;font-size:11px;font-weight:600;padding:3px 9px;border-radius:20px;white-space:nowrap}
 .chip.warn{background:var(--warn-bg);color:var(--warn-c)}
@@ -95,6 +95,7 @@ h3{font-size:15px}
 .gbar>span:first-child{overflow:hidden;text-overflow:ellipsis;min-width:0}
 .gbar .bd{margin-left:auto;font-weight:500;opacity:.9;flex-shrink:0}
 .gbar.ext{background-image:repeating-linear-gradient(45deg,rgba(255,255,255,.18) 0 6px,transparent 6px 12px)}
+.gridl{position:absolute;inset:0;display:flex;pointer-events:none}.gridl i{display:block;height:100%;border-right:1px solid var(--line);opacity:.6}
 .evl{position:absolute;top:0;bottom:0;border-left:2px dashed var(--red);z-index:2}
 .foot{display:flex;gap:20px;padding:12px 16px;font-size:11px;color:var(--muted);border-top:1px solid var(--line);flex-wrap:wrap;flex-shrink:0}
 .grid{display:grid;grid-template-columns:repeat(auto-fill,minmax(250px,1fr));gap:16px}
@@ -260,10 +261,11 @@ sheet_rows:[
 };
 const CLOUD=!!(CFG.url&&CFG.key&&window.supabase);
 const sb=CLOUD?supabase.createClient(CFG.url,CFG.key):null;
-let S, last=null, loading=CLOUD, bootErr='', HAS_ASG=true, HAS_NUM=true, HAS_MIN=true, HAS_SUG=true, HAS_PROF=true, HAS_SHEETS=true, HAS_ACC=true;
-if(CLOUD)S={users:[],tasks:[],events:[],files:[],notes:[],meetings:[],folders:[],suggestions:[],sheet_rows:[]};
+let S, last=null, loading=CLOUD, bootErr='', HAS_ASG=true, HAS_NUM=true, HAS_MIN=true, HAS_SUG=true, HAS_PROF=true, HAS_SHEETS=true, HAS_ACC=true, HAS_COLS=true, HAS_EVX=true;
+if(CLOUD)S={users:[],tasks:[],events:[],files:[],notes:[],meetings:[],folders:[],suggestions:[],sheet_rows:[],sheet_cols:[]};
 else{try{S=JSON.parse(localStorage.getItem('tedxl2'))}catch(e){} if(!S||!S.meetings)S=JSON.parse(JSON.stringify(seed));}
 if(!S.suggestions)S.suggestions=[];
+if(!S.sheet_cols)S.sheet_cols=[];
 if(!S.sheet_rows)S.sheet_rows=CLOUD?[]:JSON.parse(JSON.stringify(seed.sheet_rows));
 if(!CLOUD){let n=Math.max(0,...S.tasks.map(t=>t.num||0));[...S.tasks].sort((a,b)=>a.id-b.id).forEach(t=>{if(t.num==null)t.num=++n})}
 let rv=null, rm=null, minDraft={}, minTimer=null, theme='light';
@@ -279,13 +281,14 @@ const save=()=>{if(CLOUD){sync();return}try{localStorage.setItem('tedxl2',JSON.s
 const TABLES=['tasks','events','files','notes','meetings'];
 async function load(){
  const names=['profiles',...TABLES,'folders'];
- const res=await Promise.all([...names.map(n=>sb.from(n).select('*')),sb.from('suggestions').select('*'),sb.from('sheet_rows').select('*')]);
- const rsh=res.pop(),rs=res.pop();
+ const res=await Promise.all([...names.map(n=>sb.from(n).select('*')),sb.from('suggestions').select('*'),sb.from('sheet_rows').select('*'),sb.from('sheet_cols').select('*'),sb.from('events').select('mode').limit(1)]);
+ const rpr=res.pop(),rco=res.pop(),rsh=res.pop(),rs=res.pop();
  const err=res.find(r=>r.error);if(err)throw err.error;
  const [p,...rest]=res;S.users=p.data;
  TABLES.forEach((t,i)=>S[t]=rest[i].data);
  S.folders=rest[TABLES.length].data.map(x=>x.name).sort();
  HAS_SUG=!rs.error;S.suggestions=HAS_SUG?rs.data:[];
+ HAS_COLS=!rco.error;S.sheet_cols=HAS_COLS?rco.data:[];S.sheet_cols.forEach(c=>c.o=c.o||[]);HAS_EVX=!rpr.error;
  HAS_SHEETS=!rsh.error;S.sheet_rows=HAS_SHEETS?rsh.data:[];
  tesOK=false;if(HAS_SHEETS){try{const t=await sb.rpc('tes_status');tesOK=t.data===true}catch(e){}}
  HAS_ASG=!S.tasks.length||'asg' in S.tasks[0];HAS_NUM=!S.tasks.length||'num' in S.tasks[0];
@@ -307,8 +310,8 @@ async function boot(){
 let syncing=Promise.resolve();
 function sync(){syncing=syncing.then(doSync);return syncing}
 async function doSync(){
- const errs=[];const strip=(t,o)=>{if(t==='tasks'){const {c,...r}=o;if(!HAS_ASG)delete r.asg;if(!HAS_NUM)delete r.num;return r}if(t==='meetings'&&!HAS_MIN){const {minutes,...r}=o;return r}return o};
- for(const t of [...TABLES,...(HAS_SUG?['suggestions']:[]),...(HAS_SHEETS?['sheet_rows']:[])]){
+ const errs=[];const strip=(t,o)=>{if(t==='tasks'){const {c,...r}=o;if(!HAS_ASG)delete r.asg;if(!HAS_NUM)delete r.num;return r}if(t==='events'&&!HAS_EVX){const {mode,link,...r}=o;return r}if(t==='meetings'&&!HAS_MIN){const {minutes,...r}=o;return r}return o};
+ for(const t of [...TABLES,...(HAS_SUG?['suggestions']:[]),...(HAS_SHEETS?['sheet_rows']:[]),...(HAS_COLS?['sheet_cols']:[])]){
   const old=new Map(last[t].map(o=>[o.id,JSON.stringify(strip(t,o))])),now=new Map(S[t].map(o=>[o.id,o]));
   const up=S[t].filter(o=>old.get(o.id)!==JSON.stringify(strip(t,o))).map(o=>strip(t,o));
   const del=[...old.keys()].filter(id=>!now.has(id));
@@ -403,7 +406,7 @@ function render(){
  <div class="nav">${navB}${teamNavB?`<div class="navsec">AREE TEAM</div>${teamNavB}`:''}${can.access()?`<div class="navsec">AMMINISTRAZIONE</div>${adm}`:''}</div>
  ${view==='timeline'?`<div class="sec"><span>FILTRA TEAM</span><span>${Object.values(filt).filter(Boolean).length}/4</span></div>
  <div class="tf">${Object.entries(TEAMS).map(([k,T])=>`<label><span class="dot" style="background:${T.c}"></span>${T.name}<span class="n">${S.users.filter(u=>u.team===k).length}</span><input type="checkbox" ${filt[k]?'checked':''} onchange="filt.${k}=this.checked?1:0;render()"></label>`).join('')}</div>`:''}
- <div class="user">${av(me,me.team)}<div class="meta"><b>${esc(me.name)}</b>${roleTag(me.role)} ${me.team?`<small>${TEAMS[me.team].name}</small>`:''}</div><button title="Impostazioni" onclick="openSettings()">⚙</button><button title="Esci" onclick="logout()">⇥</button></div>
+ <div class="user">${av(me,me.team)}<div class="meta"><b>${esc(me.name)}</b><div class="mr">${roleTag(me.role)}${me.team?`<small>${TEAMS[me.team].name}</small>`:''}</div></div><button title="Impostazioni" onclick="openSettings()">⚙</button><button title="Esci" onclick="logout()">⇥</button></div>
  </aside><main><div class="mnav">${navB}${teamNavB}${adm}<button onclick="openSettings()">⚙ Impostazioni</button><button onclick="logout()">⇥ Esci</button></div><div class="mhead">${top}</div><div class="mbody ${view==='timeline'?'fill':''}">${body}</div></main></div>${modal?modalView():''}`;
  const nb=document.querySelector('.mbody'),ng=document.querySelector('.gantt'),nm=document.querySelector('.mb');
  if(nb)nb.scrollTop=sv.b;if(ng){ng.scrollLeft=sv.gx;ng.scrollTop=sv.gy}if(nm)nm.scrollTop=sv.m;
@@ -493,20 +496,29 @@ function overview(){const days=Math.ceil((EVENT-TODAY)/864e5);
  <button class="btn ghost sm" style="margin-top:10px;width:100%" onclick="go('calendar')">Apri calendario</button></div></div>`}
 
 /* ---------- TIMELINE ---------- */
+function isoWeek(d){const t=new Date(Date.UTC(d.getFullYear(),d.getMonth(),d.getDate())),n=t.getUTCDay()||7;t.setUTCDate(t.getUTCDate()+4-n);return Math.ceil(((t-new Date(Date.UTC(t.getUTCFullYear(),0,1)))/864e5+1)/7)}
+const ld=s=>new Date(s+'T00:00:00');
+const MES=['GEN','FEB','MAR','APR','MAG','GIU','LUG','AGO','SET','OTT','NOV','DIC'];
+function ganttCells(sc){const Y=START.getFullYear(),end=new Date(Y+1,0,1),ppd={w:10,m:3.7,q:3}[sc]||3.7,cells=[];
+ const push=(a,b,l,sub)=>cells.push({l,sub,w:Math.round((b-a)/864e5*ppd*10)/10});
+ if(sc==='q')for(let q=0;q<4;q++)push(new Date(Y,q*3,1),new Date(Y,q*3+3,1),'Q'+(q+1));
+ else if(sc==='w'){let a=new Date(START);while(a<end){const b=new Date(a.getFullYear(),a.getMonth(),a.getDate()+8-(a.getDay()||7));if(b>end)b.setTime(end.getTime());push(a,b,'W'+isoWeek(a),a.getDate()+' '+MES[a.getMonth()].toLowerCase());a=b}}
+ else for(let m=0;m<12;m++)push(new Date(Y,m,1),new Date(Y,m+1,1),MES[m]);
+ return {cells,ppd,total:cells.reduce((t,c)=>t+c.w,0)}}
+function setScale(sc){scale=sc;render();const g=document.querySelector('.gantt');if(g&&g.dataset.today)g.scrollLeft=Math.max(0,+g.dataset.today-200)}
 function timeline(){
  const vis=S.tasks.filter(t=>filt[t.team]&&t.t.toLowerCase().includes(q.toLowerCase()));
- const months=scale==='m'?['GEN','FEB','MAR','APR','MAG','GIU','LUG','AGO','SET','OTT']:['Q1','Q2','Q3','Q4'];
- const mw=scale==='m'?110:270, total=months.length*mw, span=(scale==='m'?new Date(2027,10,1):new Date(2028,0,1))-START;
- const x=d=>((new Date(d)-START)/span)*total;
- const bar=t=>{const w=Math.max(x(t.e)-x(t.s),40),o=t.own?U(t.own):null;
-  return `<div class="gbar ${t.req?'ext':''}" style="left:${x(t.s)}px;width:${w}px;background-color:${TEAMS[t.team].c}" title="${esc(tnum(t)+' '+t.t+' — '+(o?o.name:'da assegnare')+' — '+fmt(t.s)+' → '+fmt(t.e)+' ('+days(t)+' g)')}" onclick="openTask(${t.id})"><span>${esc(t.t)}</span>${w>230?`<span class="bd">${days(t)} g${o?' · '+esc(o.ini||ini(o.name)):''}</span>`:''}</div>`};
+ const {cells,ppd,total}=ganttCells(scale),x=d=>(((typeof d==='string'?ld(d):d)-START)/864e5)*ppd,td=x(TODAY);
+ const bar=t=>{const l=Math.max(x(t.s),0),w=Math.max(Math.min(x(t.e)+ppd,total)-l,40),o=t.own?U(t.own):null;
+  return `<div class="gbar ${t.req?'ext':''}" style="left:${l}px;width:${w}px;background-color:${TEAMS[t.team].c}" title="${esc(tnum(t)+' '+t.t+' — '+(o?o.name:'da assegnare')+' — '+fmt(t.s)+' → '+fmt(t.e)+' ('+days(t)+' g)')}" onclick="openTask(${t.id})"><span>${esc(t.t)}</span>${w>230?`<span class="bd">${days(t)} g${o?' · '+esc(o.ini||ini(o.name)):''}</span>`:''}</div>`};
  return header('Pianificazione','Timeline di progetto',newTaskBtn())+stats()+BODY+`<div class="card">
  <div class="tools"><input id="qs" placeholder="🔍 Cerca una task..." value="${esc(q)}" oninput="q=this.value;render();setTimeout(()=>{qs.focus();qs.setSelectionRange(99,99)})">
- <div class="seg"><button class="${scale==='q'?'on':''}" onclick="scale='q';render()">Trimestri</button><button class="${scale==='m'?'on':''}" onclick="scale='m';render()">Mesi</button></div></div>
- <div class="gantt"><div class="gl"><div class="gh">ATTIVITÀ · OWNER · DURATA</div>${vis.map(ganttRow).join('')||'<div class="empty">Nessuna task.</div>'}</div>
- <div class="gr" style="--mw:${mw}px"><div style="width:${total}px"><div class="months">${months.map(m=>`<div>${m}</div>`).join('')}</div>
- <div class="lanes"><div class="evl" style="left:${x(EVENT)}px"></div>${vis.map(t=>`<div class="lane">${bar(t)}</div>`).join('')}</div></div></div></div>
- <div class="foot"><span>▨ Barra a righe = richiesta da un altro team</span><span style="color:var(--red)">┆ Data evento</span><span style="margin-left:auto">● stato: verde in corso · blu da iniziare · grigio terminata</span></div></div>`}
+ <div class="seg"><button class="${scale==='w'?'on':''}" onclick="setScale('w')">Settimane</button><button class="${scale==='m'?'on':''}" onclick="setScale('m')">Mesi</button><button class="${scale==='q'?'on':''}" onclick="setScale('q')">Trimestri</button></div></div>
+ <div class="gantt" data-today="${td>=0&&td<=total?Math.round(td):''}"><div class="gl"><div class="gh">ATTIVITÀ · OWNER · DURATA</div>${vis.map(ganttRow).join('')||'<div class="empty">Nessuna task.</div>'}</div>
+ <div class="gr"><div style="width:${total}px"><div class="months">${cells.map(c=>`<div style="flex:0 0 ${c.w}px" title="${c.l}${c.sub?' · dal '+c.sub:''}"><span style="text-align:center;line-height:1.35">${c.w>=26?c.l:''}${c.sub&&c.w>=60?`<br><small style="letter-spacing:0;opacity:.8">${c.sub}</small>`:''}</span></div>`).join('')}</div>
+ <div class="lanes"><div class="gridl">${cells.map(c=>`<i style="flex:0 0 ${c.w}px"></i>`).join('')}</div>${td>=0&&td<=total?`<div class="evl" style="left:${td}px;border-left:2px solid var(--info-c)" title="Oggi"></div>`:''}<div class="evl" style="left:${x(EVENT)}px"></div>${vis.map(t=>`<div class="lane">${bar(t)}</div>`).join('')}</div></div></div></div>
+ <div class="foot"><span>▨ Barra a righe = richiesta da un altro team</span><span style="color:var(--info-c)">│ Oggi</span><span style="color:var(--red)">┆ Data evento</span><span>Settimane numerate secondo lo standard ISO (la settimana 1 inizia lunedì 4 gennaio)</span><span style="margin-left:auto">● stato: verde in corso · blu da iniziare · grigio terminata</span></div></div>`}
+
 /* ---------- TASK ---------- */
 function tasksView(){
  const tabs=[['mine','Assegnate a me',t=>isMine(t)],['team','Del mio team',t=>t.team===me.team],['inbox','Da assegnare',t=>!t.own&&(isSA()||t.team===me.team)],['sent','Richieste ad altri team',t=>t.req&&(isSA()||t.req===me.team)]];
@@ -695,7 +707,7 @@ function cellHtml(sh,c,r){const v=r.d[c.k]??'',on=`onchange="setCell(${r.id},'${
  if(t==='num'||t==='eur')return `<input type="number" step="any" inputmode="decimal" value="${esc(v)}" ${on}>`;
  if(t==='url')return `<div class="cwl"><input value="${esc(v)}" placeholder="https://" ${on}>${/^https?:\/\//i.test(v)?`<a href="${esc(v)}" target="_blank" rel="noopener" title="Apri">↗</a>`:''}</div>`;
  return `<input value="${esc(v)}" ${on}>`}
-function sheetTable(key,rows,gv){const sh=SHEETS[key];
+function sheetTable(key,rows,gv){const sh={...SHEETS[key],cols:colsOf(key)};
  return `<div class="shwrap"><table class="sheet" style="width:${sh.cols.reduce((a,c)=>a+(c.w||140),76)}px"><colgroup><col style="width:36px">${sh.cols.map(c=>`<col style="width:${c.w||140}px">`).join('')}<col style="width:40px"></colgroup><thead><tr><th>#</th>${sh.cols.map(c=>`<th>${c.l}</th>`).join('')}<th></th></tr></thead><tbody>
  ${rows.map((r,i)=>`<tr><td class="rn">${i+1}</td>${sh.cols.map(c=>`<td>${cellHtml(sh,c,r)}</td>`).join('')}<td><button class="ico" title="Elimina riga" onclick="delRow(${r.id})">${trashSvg}</button></td></tr>`).join('')||`<tr><td colspan="${sh.cols.length+2}" class="empty" style="padding:18px">Nessuna riga.</td></tr>`}
  </tbody></table></div>`}
@@ -703,10 +715,10 @@ function sheetView(key){const sh=SHEETS[key];if(!sh)return '';
  if(CLOUD&&!HAS_SHEETS)return `<div class="info">I fogli di lavoro richiedono la migrazione SQL 003: ${isSA()?'esegui il file <b>db/migrations/003_aree_team_e_fogli.sql</b> nel SQL Editor di Supabase.':'chiedi al superadmin di eseguirla.'}</div>`;
  if(sh.locked&&!tesOK)return `<div class="card pad" style="max-width:420px;margin:30px auto;text-align:center"><div style="font-size:34px">🔒</div><h3 style="margin:8px 0 4px">${sh.t}</h3><p style="color:var(--muted);font-size:13px;margin-bottom:14px">Inserisci la password della tesoreria per aprire il foglio.</p>
   <input type="password" id="tpw" placeholder="Password" autocomplete="off" onkeydown="if(event.key==='Enter')unlockTes()"><div class="lock" id="tpe" style="display:none;margin-top:10px;color:var(--red)"></div><button class="btn" style="width:100%;margin-top:12px" onclick="unlockTes()">Sblocca</button></div>`;
- const ql=shq.trim().toLowerCase(),all=sheetRows(key),match=r=>!ql||Object.entries(r.d).some(([k,v])=>{const c=sh.cols.find(x=>x.k===k);const s=c&&c.t==='person'?U(v).name:v;return String(s??'').toLowerCase().includes(ql)});
+ const ql=shq.trim().toLowerCase(),all=sheetRows(key),match=r=>!ql||Object.entries(r.d).some(([k,v])=>{const c=colsOf(key).find(x=>x.k===k);const s=c&&c.t==='person'?U(v).name:v;return String(s??'').toLowerCase().includes(ql)});
  const tool=`<div style="padding:0 0 12px;display:flex;gap:8px;flex-wrap:wrap;align-items:center"><input id="shs" style="max-width:260px" placeholder="🔍 Cerca nel foglio…" value="${esc(shq)}" oninput="shq=this.value;render();setTimeout(()=>{const e=document.getElementById('shs');if(e){e.focus();e.setSelectionRange(99,99)}})">
   <span style="color:var(--muted);font-size:12px">${all.length} ${all.length===1?'riga':'righe'}</span><span style="flex:1"></span>
-  <button class="btn ghost sm" onclick="exportSheet('${key}')">⬇ Esporta per Excel (.csv)</button>${sh.locked?`<button class="btn ghost sm" onclick="lockTes()">🔒 Blocca</button>`:''}${sh.group?'':`<button class="btn sm" onclick="addRow('${key}')">+ Aggiungi riga</button>`}</div>`;
+  <button class="btn ghost sm" onclick="openCols('${key}')">▦ Colonne</button><input type="file" id="csvf" accept=".csv,.txt,text/csv" style="display:none" onchange="pickCsv(this,'${key}')"><button class="btn ghost sm" onclick="document.getElementById('csvf').click()">⬆ Importa CSV</button><button class="btn ghost sm" onclick="exportSheet('${key}')">⬇ Esporta (.csv)</button><button class="btn ghost sm" title="Scarica un CSV vuoto con le colonne del foglio" onclick="exportSheet('${key}',true)">Modello</button>${sh.locked?`<button class="btn ghost sm" onclick="lockTes()">🔒 Blocca</button>`:''}${sh.group?'':`<button class="btn sm" onclick="addRow('${key}')">+ Aggiungi riga</button>`}</div>`;
  let body='';
  if(sh.tes)body=`<div class="grid" style="grid-template-columns:repeat(3,1fr);margin-bottom:14px"><div class="card pad kpi"><small>Entrate</small><b data-sum="${key}|in">${eur(sumOf(key).in)}</b></div><div class="card pad kpi"><small>Uscite</small><b data-sum="${key}|out">${eur(sumOf(key).out)}</b></div><div class="card pad kpi"><small>Saldo</small><b data-sum="${key}|bal">${eur(sumOf(key).bal)}</b></div></div>`+sheetTable(key,all.filter(match).sort((a,b)=>String(a.d.d||'9').localeCompare(String(b.d.d||'9'))));
  else if(sh.group){const g=sh.group,known=g.o,other=all.filter(r=>!known.includes(r.d[g.k]));
@@ -723,7 +735,7 @@ function addRow(key,gv){const sh=SHEETS[key];if(!teamAccess(sh.team))return;cons
  setTimeout(()=>{const tr=[...document.querySelectorAll('.sheet tbody tr')].pop(),i=tr&&tr.querySelector('td:nth-child(2) input,td:nth-child(2) select');if(i){if(tr.scrollIntoView)tr.scrollIntoView({block:'nearest'});i.focus()}})}
 function delRow(id){const r=S.sheet_rows.find(x=>x.id===id);if(!r||!teamAccess(r.team))return;if(!confirm('Eliminare questa riga?'))return;
  mutRows(()=>{S.sheet_rows=S.sheet_rows.filter(x=>x.id!==id)});render()}
-function setCell(id,k,raw){const r0=S.sheet_rows.find(x=>x.id===id);if(!r0||!teamAccess(r0.team))return;const sh=SHEETS[r0.sheet],c=sh.cols.find(x=>x.k===k);if(!c)return;
+function setCell(id,k,raw){const r0=S.sheet_rows.find(x=>x.id===id);if(!r0||!teamAccess(r0.team))return;const sh=SHEETS[r0.sheet],c=colsOf(r0.sheet).find(x=>x.k===k);if(!c)return;
  const val=(c.t==='num'||c.t==='eur')?(raw===''||isNaN(Number(raw))?'':Number(raw)):raw;
  mutRows(()=>{const r=S.sheet_rows.find(x=>x.id===id);if(r)r.d={...r.d,[k]:val}});
  if(sh.group&&sh.group.k===k||sh.tes&&k==='tipo')render();updateSums(r0.sheet)}
@@ -736,10 +748,10 @@ async function unlockTes(){const el=document.getElementById('tpw'),pw=el?el.valu
  tesOK=true;try{sessionStorage.setItem('tedxl2_tes','1')}catch(e){}render()}
 async function lockTes(){tesOK=false;try{sessionStorage.removeItem('tedxl2_tes')}catch(e){}
  if(CLOUD){try{await sb.rpc('tes_lock');await load()}catch(e){}}render()}
-function exportSheet(key){const sh=SHEETS[key],cell=(c,r)=>{let v=r.d[c.k]??'';if(c.t==='person')v=v?U(v).name:'';if(c.t==='num'||c.t==='eur')v=v===''?'':String(v).replace('.',',');
+function exportSheet(key,tpl){const sh={...SHEETS[key],cols:colsOf(key)},cell=(c,r)=>{let v=r.d[c.k]??'';if(c.t==='person')v=v?U(v).name:'';if(c.t==='num'||c.t==='eur')v=v===''?'':String(v).replace('.',',');
   v=String(v).replace(/"/g,'""');return /[;"\n\r]/.test(v)?`"${v}"`:v};
- const rows=sheetRows(key),csv='﻿'+[sh.cols.map(c=>c.l).join(';'),...rows.map(r=>sh.cols.map(c=>cell(c,r)).join(';'))].join('\r\n');
- const a=document.createElement('a');a.href=URL.createObjectURL(new Blob([csv],{type:'text/csv;charset=utf-8'}));a.download=`${sh.t.replace(/[^\w]+/g,'_')}.csv`;document.body.appendChild(a);a.click();setTimeout(()=>{URL.revokeObjectURL(a.href);a.remove()},500)}
+ const rows=tpl?[]:sheetRows(key),csv='﻿'+[sh.cols.map(c=>c.l).join(';'),...rows.map(r=>sh.cols.map(c=>cell(c,r)).join(';'))].join('\r\n');
+ const a=document.createElement('a');a.href=URL.createObjectURL(new Blob([csv],{type:'text/csv;charset=utf-8'}));a.download=`${sh.t.replace(/[^\w]+/g,'_')}${tpl?'_modello':''}.csv`;document.body.appendChild(a);a.click();setTimeout(()=>{URL.revokeObjectURL(a.href);a.remove()},500)}
 
 /* ---- accessi alle aree team (Utenti e permessi) ---- */
 async function toggleAccess(uid,tm,on){
@@ -754,6 +766,118 @@ function accessCards(teams){
   return `<div class="card pad"><h3 style="display:flex;gap:8px;align-items:center"><span class="dot" style="width:10px;height:10px;background:${T.c}"></span>Area ${T.name}</h3>
   <small style="color:var(--muted)">${S.users.filter(u=>u.team===k).length} membri · ${S.users.filter(u=>u.role==='lead'||u.role==='superadmin').length} lead/superadmin con accesso totale</small>
   <div style="margin-top:10px">${elig.map(u=>`<label class="li" style="cursor:pointer">${av(u)}<div style="flex:1"><b>${esc(u.name)}</b><small>${u.team?TEAMS[u.team].name:'Senza team'}</small></div><input type="checkbox" style="width:auto" ${(u.access||[]).includes(k)?'checked':''} onchange="toggleAccess('${esc(u.id)}','${k}',this.checked)"></label>`).join('')||'<div class="empty">Nessun altro membro a cui concedere l\'accesso.</div>'}</div></div>`}).join('')}</div></div>`}
+
+/* ---- colonne dei fogli: aggiungere / rimuovere ---- */
+const TYPE_L={text:'Testo',num:'Numero',eur:'Importo €',date:'Data',sel:'Tendina',url:'Link'};
+function colsOf(key){const sh=SHEETS[key],cc=S.sheet_cols.filter(c=>c.sheet===key),hid=new Set(cc.filter(c=>c.kind==='hide').map(c=>c.k));
+ return [...sh.cols.filter(c=>!hid.has(c.k)),...cc.filter(c=>c.kind==='add').sort((a,b)=>a.id-b.id).map(c=>({k:c.k,l:c.l||c.k,t:c.t||'text',o:c.o||[],w:c.t==='sel'?140:c.t==='date'?130:(c.t==='num'||c.t==='eur')?110:170,custom:c.id}))]}
+const reqKeys=key=>{const sh=SHEETS[key];return new Set([sh.group&&sh.group.k,sh.sum,sh.tes&&'tipo',sh.tes&&'imp',sh.cols[0].k].filter(Boolean))};
+const idGen=arr=>{if(CLOUD)return()=>nid(arr);let b=Math.max(0,...arr.map(x=>x.id));return()=>++b};
+function openCols(key){if(!teamAccess(SHEETS[key].team))return;modal={type:'cols',key};render()}
+function addCol(key){const sh=SHEETS[key];if(!teamAccess(sh.team))return;
+ if(CLOUD&&!HAS_COLS)return alert('Per aggiungere colonne serve la migrazione SQL 004 (cartella db/migrations).');
+ const l=(document.getElementById('ncn').value||'').trim().slice(0,60),t=document.getElementById('nct').value;
+ if(!l)return alert('Scrivi il nome della colonna.');
+ if(colsOf(key).some(c=>normH(c.l)===normH(l)))return alert('Esiste già una colonna con questo nome.');
+ const o=t==='sel'?[...new Set((document.getElementById('nco').value||'').split(',').map(x=>x.trim()).filter(Boolean))].slice(0,30):[];
+ if(t==='sel'&&!o.length)return alert('Scrivi almeno un\'opzione per la tendina, separate da virgola.');
+ const id=nid(S.sheet_cols),row={id,sheet:key,team:sh.team,kind:'add',k:'c'+id,l,t,o};
+ mutRows(()=>{if(!S.sheet_cols.some(x=>x.id===id))S.sheet_cols.push(row)});render()}
+function removeCol(key,k){const sh=SHEETS[key];if(!teamAccess(sh.team)||reqKeys(key).has(k))return;
+ const col=colsOf(key).find(c=>c.k===k);if(!col)return;
+ if(col.custom){if(!confirm('Rimuovere la colonna «'+col.l+'»? I suoi dati non saranno più visibili.'))return;const id=col.custom;mutRows(()=>{S.sheet_cols=S.sheet_cols.filter(x=>x.id!==id)});render();return}
+ if(CLOUD&&!HAS_COLS)return alert('Per rimuovere colonne serve la migrazione SQL 004 (cartella db/migrations).');
+ if(!confirm('Rimuovere la colonna «'+col.l+'»? I dati restano salvati e puoi ripristinarla quando vuoi.'))return;
+ const id=nid(S.sheet_cols),row={id,sheet:key,team:sh.team,kind:'hide',k,l:null,t:null,o:[]};
+ mutRows(()=>{if(!S.sheet_cols.some(x=>x.id===id))S.sheet_cols.push(row)});render()}
+function restoreCol(key,id){if(!teamAccess(SHEETS[key].team))return;mutRows(()=>{S.sheet_cols=S.sheet_cols.filter(x=>x.id!==id)});render()}
+
+/* ---- import CSV ---- */
+const normH=s=>String(s??'').toLowerCase().normalize('NFD').replace(/[̀-ͯ]/g,'').replace(/[^a-z0-9]+/g,' ').trim();
+const ALIAS={insights:{d:['data','date','giorno'],canale:['canale','piattaforma','social'],fol:['follower','followers','iscritti'],reach:['copertura','reach','impressioni uniche','unique impressions','account raggiunti'],imp:['impressioni','impressions','visualizzazioni','views'],eng:['engagement','tasso di engagement','interazioni'],post:['post','contenuti','posts','post pubblicati']},
+ tesoreria:{d:['data','date'],desc:['descrizione','causale'],imp:['importo','totale','ammontare'],tipo:['tipo','segno'],cat:['categoria']},
+ partner:{n:['azienda','partner','nome','ragione sociale'],val:['valore','importo','contributo'],ref:['referente','contatto'],cont:['email','telefono','mail']},
+ speaker:{n:['nome','speaker','nome e cognome'],talk:['talk','tema','titolo'],ruolo:['ruolo','professione','lavoro']},
+ piano:{d:['data','date','pubblicazione'],tit:['titolo','contenuto','post'],canale:['canale','piattaforma','social']},
+ inventario:{n:['articolo','oggetto','nome','materiale'],qta:['quantita','qta','pezzi','numero']},
+ eventi:{voce:['attivita','voce','descrizione'],d:['data','date'],bud:['budget','costo','importo']}};
+function parseCSV(t){t=String(t).replace(/^﻿/,'');const first=t.split(/\r?\n/)[0]||'';
+ const cnt=ch=>{let n=0,q=false;for(const c of first){if(c==='"')q=!q;else if(!q&&c===ch)n++}return n};
+ const best=[';','\t',','].map(d=>[d,cnt(d)]).sort((a,b)=>b[1]-a[1])[0],D=best[1]?best[0]:';';
+ const rows=[];let row=[],cur='',q=false;
+ for(let i=0;i<t.length;i++){const c=t[i];
+  if(q){if(c==='"'){if(t[i+1]==='"'){cur+='"';i++}else q=false}else cur+=c}
+  else if(c==='"')q=true;
+  else if(c===D){row.push(cur);cur=''}
+  else if(c==='\n'||c==='\r'){if(c==='\r'&&t[i+1]==='\n')i++;row.push(cur);cur='';rows.push(row);row=[]}
+  else cur+=c}
+ if(cur!==''||row.length){row.push(cur);rows.push(row)}
+ return {delim:D,rows:rows.filter(r=>r.some(x=>String(x).trim()!==''))}}
+function toNum(s){s=String(s??'').replace(/[€%\s ]/g,'');if(!s)return '';
+ if(/^-?\d{1,3}(\.\d{3})+(,\d+)?$/.test(s))s=s.replace(/\./g,'').replace(',','.');
+ else if(s.includes(',')&&s.includes('.')){if(s.lastIndexOf(',')>s.lastIndexOf('.'))s=s.replace(/\./g,'').replace(',','.');else s=s.replace(/,/g,'')}
+ else if(s.includes(','))s=s.replace(',','.');
+ const n=Number(s);return isNaN(n)?'':n}
+function toDate(s){s=String(s??'').trim();let y,mo,d,m;
+ if(m=s.match(/^(\d{4})-(\d{1,2})-(\d{1,2})/)){y=+m[1];mo=+m[2];d=+m[3]}
+ else if(m=s.match(/^(\d{1,2})[\/.\-](\d{1,2})[\/.\-](\d{2,4})/)){d=+m[1];mo=+m[2];y=+m[3];if(y<100)y+=2000;if(mo>12&&d<=12){const x=d;d=mo;mo=x}}
+ else return '';
+ const t=new Date(y,mo-1,d);return t.getFullYear()===y&&t.getMonth()===mo-1&&t.getDate()===d?iso(t):''}
+function convCell(c,v){v=String(v??'').trim();if(!v)return '';
+ if(c.t==='num'||c.t==='eur')return toNum(v);
+ if(c.t==='date')return toDate(v);
+ if(c.t==='sel'){const o=(c.o||[]).find(x=>normH(x)===normH(v));return o||v}
+ if(c.t==='person'){const n=normH(v),u=S.users.find(x=>x.role!=='guest'&&(String(x.id)===v||normH(x.name)===n||(x.email||'').toLowerCase()===v.toLowerCase()));return u?u.id:''}
+ return v}
+function guessType(vals){const v=vals.map(x=>String(x??'').trim()).filter(Boolean);if(!v.length)return 'text';
+ if(v.every(x=>toDate(x)))return 'date';if(v.every(x=>toNum(x)!==''))return 'num';return 'text'}
+function autoMap(heads,key){const cols=colsOf(key),al=ALIAS[key]||{},used=new Set(),map=heads.map(()=>null);
+ const names=c=>[normH(c.l),normH(c.k),...((al[c.k]||[]).map(normH))];
+ heads.forEach((h,i)=>{const n=normH(h);if(!n)return;const c=cols.find(c=>!used.has(c.k)&&names(c).includes(n));if(c){map[i]=c.k;used.add(c.k)}});
+ heads.forEach((h,i)=>{if(map[i]!==null)return;const n=normH(h);if(!n)return;const c=cols.find(c=>!used.has(c.k)&&names(c).some(a=>a.length>=3&&(n.includes(a)||a.includes(n))));if(c){map[i]=c.k;used.add(c.k)}});
+ return map.map(m=>m===null?((!CLOUD||HAS_COLS)?'__new':''):m)}
+function pickCsv(inp,key){const f=inp.files[0];inp.value='';if(!f)return;if(f.size>5e6)return alert('File troppo grande (max 5 MB).');
+ const rd=new FileReader();rd.onload=()=>{let txt;const buf=rd.result;try{txt=new TextDecoder('utf-8',{fatal:true}).decode(buf)}catch(e){try{txt=new TextDecoder('windows-1252').decode(buf)}catch(e2){txt=String.fromCharCode(...new Uint8Array(buf))}}
+  csvFromText(key,txt,f.name)};rd.readAsArrayBuffer(f)}
+function csvFromText(key,txt,fname){const sh=SHEETS[key];if(!sh||!teamAccess(sh.team))return;
+ const p=parseCSV(txt);if(p.rows.length<1)return alert('Il file è vuoto o non è un CSV leggibile.');
+ const hdr=true,heads=p.rows[0];modal={type:'csvimp',key,fname:fname||'file.csv',delim:p.delim,rows:p.rows,hdr,map:autoMap(heads,key),fixed:{},mode:'append'};render()}
+function csvSet(k,v){if(!modal||modal.type!=='csvimp')return;if(k==='hdr'){modal.hdr=v;const heads=v?modal.rows[0]:modal.rows[0].map((_,i)=>'Colonna '+(i+1));modal.map=v?autoMap(heads,modal.key):modal.rows[0].map((_,i)=>colsOf(modal.key)[i]?colsOf(modal.key)[i].k:'')}
+ else if(k==='mode')modal.mode=v;else if(k.startsWith('map')){modal.map[+k.slice(3)]=v}else if(k.startsWith('fx_'))modal.fixed[k.slice(3)]=v;
+ if(!k.startsWith('fx_'))render()}
+function runImport(){const m=modal,key=m.key,sh=SHEETS[key];if(!m||m.type!=='csvimp'||!teamAccess(sh.team))return;
+ const heads=m.hdr?m.rows[0]:m.rows[0].map((_,i)=>'Colonna '+(i+1)),data=m.rows.slice(m.hdr?1:0);
+ if(!data.length)return alert('Il file non contiene righe di dati.');if(data.length>2000)return alert('Troppe righe (massimo 2000 per importazione).');
+ if(!m.map.some(x=>x))return alert('Nessuna colonna del file è collegata al foglio: scegli almeno una corrispondenza.');
+ if(m.mode==='replace'&&!confirm('Sostituire TUTTE le righe attuali del foglio con quelle del file?\nL\'operazione non si può annullare.'))return;
+ const ng=idGen(S.sheet_cols),newCols=[];let cols=colsOf(key).map(c=>({...c}));
+ const colFor=m.map.map((v,i)=>{if(v==='__new'){const samples=data.map(r=>r[i]),t=guessType(samples);let l=String(heads[i]||'').trim().slice(0,60)||('Colonna '+(i+1));
+   const ex=cols.find(c=>normH(c.l)===normH(l));if(ex)return ex;const id=ng(),row={id,sheet:key,team:sh.team,kind:'add',k:'c'+id,l,t,o:[]};newCols.push(row);const c={k:row.k,l,t,o:[],custom:id};cols.push(c);return c}
+  return v?cols.find(c=>c.k===v)||null:null});
+ const mapped=new Set(colFor.filter(Boolean).map(c=>c.k)),fixed={};
+ cols.forEach(c=>{if(!mapped.has(c.k)&&m.fixed[c.k])fixed[c.k]=c.t==='num'||c.t==='eur'?toNum(m.fixed[c.k]):m.fixed[c.k]});
+ const rg=idGen(S.sheet_rows),rows=[];let skipped=0;
+ data.forEach(r=>{if(!r.some(x=>String(x).trim()!==''))return;const d={...fixed};colFor.forEach((c,i)=>{if(c)d[c.k]=convCell(c,r[i])});
+  if(!Object.values(d).some(v=>v!==''&&v!=null)){skipped++;return}rows.push({id:rg(),sheet:key,team:sh.team,d})});
+ const oldIds=m.mode==='replace'?new Set(sheetRows(key).map(r=>r.id)):null;
+ mutRows(()=>{newCols.forEach(c=>{if(!S.sheet_cols.some(x=>x.id===c.id))S.sheet_cols.push(c)});
+  if(oldIds)S.sheet_rows=S.sheet_rows.filter(x=>!oldIds.has(x.id));
+  rows.forEach(r=>{if(!S.sheet_rows.some(x=>x.id===r.id))S.sheet_rows.push(r)})});
+ closeM();alert(`Importate ${rows.length} righe${newCols.length?` e create ${newCols.length} nuove colonne`:''}${skipped?` (${skipped} righe vuote ignorate)`:''}.`)}
+
+/* ---- email agli interessati quando si crea un evento ---- */
+async function notifyEvent(ev,teams){
+ if(!CLOUD)return alert('Modalità demo: l\'evento è salvato, ma nessuna email viene inviata.');
+ try{const {data:{session}}=await sb.auth.getSession();if(!session)throw new Error('sessione scaduta, rientra nell\'app');
+  const r=await fetch('/api/send-event',{method:'POST',headers:{'Content-Type':'application/json',Authorization:'Bearer '+session.access_token},
+   body:JSON.stringify({event:{t:ev.t,d:ev.d,h:ev.h,where:ev.where,mode:ev.mode,link:ev.link,desc:ev.desc,team:ev.team},teams:teams||(ev.team?[ev.team]:[])})});
+  const j=await r.json().catch(()=>({}));
+  if(r.ok)alert(`Email inviata a ${j.sent} ${j.sent===1?'persona':'persone'}${j.failed?` (${j.failed} non consegnate)`:''}.`);
+  else if(r.status===501)alert('Evento salvato, ma l\'invio email non è ancora configurato (serve la chiave del servizio email su Vercel: vedi README).');
+  else alert('Evento salvato, ma l\'email non è partita: '+(j.error||('errore '+r.status)))}
+ catch(e){alert('Evento salvato, ma l\'email non è partita: '+e.message)}}
+function collectEv(){const g=id=>document.getElementById(id),e=modal.e;
+ if(g('et'))e.t=g('et').value;if(g('ed'))e.d=g('ed').value;if(g('eh'))e.h=g('eh').value;if(g('ew'))e.where=g('ew').value;if(g('etm'))e.team=g('etm').value||null;if(g('eds'))e.desc=g('eds').value;if(g('elk'))e.link=g('elk').value;if(g('enot'))modal.notify=g('enot').checked}
 
 /* ================= MODALI ================= */
 const mbg=(inner,cls='')=>{const a=inner.indexOf('</h2>'),b=inner.lastIndexOf('<div class="actions"');
@@ -792,10 +916,36 @@ function modalView(){
   ${!ed?`<div class="lock">🔒 Solo il team lead del team o il superadmin possono modificare questo evento.</div>`:''}
   <div class="f"><label>Titolo</label><input id="et" value="${esc(e.t)}" ${ed?'':'disabled'}></div>
   <div class="row2"><div class="f"><label>Data</label><input type="date" id="ed" value="${e.d}" ${ed?'':'disabled'}></div><div class="f"><label>Ora</label><input type="time" id="eh" value="${e.h}" ${ed?'':'disabled'}></div></div>
-  <div class="row2"><div class="f"><label>Luogo</label><input id="ew" value="${esc(e.where)}" ${ed?'':'disabled'}></div><div class="f"><label>Per</label><select id="etm" ${ed?'':'disabled'}>${(ed?teams:[e.team]).map(k=>`<option value="${k||''}" ${e.team===k?'selected':''}>${k?TEAMS[k].name:'Tutta la crew'}</option>`).join('')}</select></div></div>
+  <div class="row2"><div class="f"><label>Modalità</label><select id="emd" ${ed?'':'disabled'} onchange="collectEv();modal.e.mode=this.value;render()"><option value="presenza" ${e.mode!=='online'?'selected':''}>In presenza</option><option value="online" ${e.mode==='online'?'selected':''}>Online</option></select></div><div class="f"><label>Luogo${e.mode==='online'?' / piattaforma':''}</label><input id="ew" value="${esc(e.where)}" ${ed?'':'disabled'}></div></div>
+  ${e.mode==='online'?`<div class="f"><label>Link della call</label><input id="elk" type="url" placeholder="https://meet.google.com/…" value="${esc(e.link||'')}" ${ed?'':'disabled'}></div>`:''}
+  <div class="row2"><div class="f"><label>Per</label><select id="etm" ${ed?'':'disabled'}>${(ed?teams:[e.team]).map(k=>`<option value="${k||''}" ${e.team===k?'selected':''}>${k?TEAMS[k].name:'Tutta la crew'}</option>`).join('')}</select></div><div></div></div>
   <div class="f"><label>Descrizione</label><textarea id="eds" ${ed?'':'disabled'}>${esc(e.desc)}</textarea></div>
+  ${ed?`<label style="display:flex;gap:8px;align-items:flex-start;font-size:13px"><input type="checkbox" id="enot" style="width:auto;margin-top:3px" ${(modal.notify!==undefined?modal.notify:!e.id)?'checked':''}><span>${e.id?'Avvisa di nuovo via email':'Invia subito una email'} a ${e.team?'tutte le persone del team '+TEAMS[e.team].name:'tutta la crew'} con titolo, data, ora, luogo${e.mode==='online'?', link della call':''} e descrizione.${CLOUD?'':' <i>(In modalità demo non parte nessuna email.)</i>'}</span></label>`:''}
   ${e.id&&S.meetings.find(m=>m.ev===e.id)?`<button class="btn ghost sm" onclick="selMeeting=${S.meetings.find(m=>m.ev===e.id).id};modal=null;go('meetings')">Vedi ordine del giorno →</button>`:''}
   <div class="actions">${e.id&&ed?`<button class="x-btn" style="margin-right:auto" onclick="if(confirm('Eliminare l\\'evento?')){S.events=S.events.filter(x=>x.id!==${e.id});save();closeM()}">Elimina</button>`:''}<button class="btn ghost" onclick="closeM()">${ed?'Annulla':'Chiudi'}</button>${ed?`<button class="btn" onclick="saveEvent()">Salva</button>`:''}</div>`)}
+
+ if(modal.type==='cols'){const key=modal.key,sh=SHEETS[key],cols=colsOf(key),req=reqKeys(key),hid=S.sheet_cols.filter(c=>c.sheet===key&&c.kind==='hide');
+  return mbg(`<h2>Colonne · ${esc(sh.t)}</h2>
+  ${CLOUD&&!HAS_COLS?`<div class="info">Per aggiungere o rimuovere colonne serve la migrazione SQL 004 (cartella db/migrations).</div>`:''}
+  <div class="f"><label>Colonne del foglio</label>${cols.map(c=>`<div class="li"><div style="flex:1"><b>${esc(c.l)}</b><small>${TYPE_L[c.t||'text']}${c.custom?' · aggiunta da voi':''}${req.has(c.k)?' · necessaria':''}</small></div>${req.has(c.k)?'':`<button class="x-btn" onclick="removeCol('${key}','${c.k}')">Rimuovi</button>`}</div>`).join('')}</div>
+  ${hid.length?`<div class="f"><label>Colonne rimosse</label>${hid.map(h=>{const b=sh.cols.find(c=>c.k===h.k);return `<div class="li"><div style="flex:1">${esc(b?b.l:h.k)}</div><button class="btn ghost sm" onclick="restoreCol('${key}',${h.id})">Ripristina</button></div>`}).join('')}</div>`:''}
+  <div class="f"><label>Aggiungi una colonna</label><div class="row2"><input id="ncn" maxlength="60" placeholder="Nome della colonna"><select id="nct" onchange="document.getElementById('ncow').style.display=this.value==='sel'?'':'none'">${Object.entries(TYPE_L).map(([k,l])=>`<option value="${k}">${l}</option>`).join('')}</select></div>
+   <div id="ncow" style="display:none;margin-top:8px"><input id="nco" placeholder="Opzioni della tendina, separate da virgola (es. Sì, No, Forse)"></div>
+   <button class="btn sm" style="margin-top:10px" onclick="addCol('${key}')">+ Aggiungi colonna</button></div>
+  <div class="actions"><button class="btn" onclick="closeM()">Chiudi</button></div>`)}
+ if(modal.type==='csvimp'){const m=modal,key=m.key,sh=SHEETS[key],cols=colsOf(key),heads=m.hdr?m.rows[0]:m.rows[0].map((_,i)=>'Colonna '+(i+1)),data=m.rows.slice(m.hdr?1:0),prev=data.slice(0,5);
+  const used=new Set(m.map.filter(x=>x&&x!=='__new')),fx=cols.filter(c=>!used.has(c.k)&&['sel','person','date'].includes(c.t||'text'));
+  const fxIn=c=>{const v=m.fixed[c.k]||'';if(c.t==='sel')return `<select onchange="csvSet('fx_${c.k}',this.value)"><option value="">—</option>${c.o.map(o=>`<option ${v===o?'selected':''}>${esc(o)}</option>`).join('')}</select>`;
+   if(c.t==='person')return `<select onchange="csvSet('fx_${c.k}',this.value)"><option value="">—</option>${S.users.filter(u=>u.role!=='guest').map(u=>`<option value="${esc(u.id)}" ${v===u.id?'selected':''}>${esc(u.name)}</option>`).join('')}</select>`;
+   return `<input type="date" value="${esc(v)}" onchange="csvSet('fx_${c.k}',this.value)">`};
+  return mbg(`<h2>Importa CSV · ${esc(sh.t)}</h2>
+  <p style="color:var(--muted);font-size:13px;margin-bottom:10px">${esc(m.fname)} · ${data.length} righe · separatore «${m.delim==='\t'?'tab':m.delim}». Controlla a quale colonna del foglio corrisponde ogni colonna del file: numeri (1.234,56), percentuali, date (31/12/2027) e nomi delle persone vengono convertiti da soli.</p>
+  <label style="display:flex;gap:8px;align-items:center;margin-bottom:10px"><input type="checkbox" style="width:auto" ${m.hdr?'checked':''} onchange="csvSet('hdr',this.checked)"> La prima riga contiene i titoli delle colonne</label>
+  <div style="overflow:auto;border:1px solid var(--line);border-radius:10px;margin-bottom:12px"><table class="sheet" style="width:max-content;min-width:100%"><thead><tr>${heads.map((h,i)=>`<th style="min-width:180px;padding:8px;vertical-align:top"><div style="font-weight:700;margin-bottom:5px;text-transform:none;letter-spacing:0">${esc(h||'(vuota)')}</div><select onchange="csvSet('map${i}',this.value)"><option value="">— ignora —</option>${cols.map(c=>`<option value="${c.k}" ${m.map[i]===c.k?'selected':''}>${esc(c.l)}</option>`).join('')}${(!CLOUD||HAS_COLS)?`<option value="__new" ${m.map[i]==='__new'?'selected':''}>+ Nuova colonna</option>`:''}</select></th>`).join('')}</tr></thead>
+   <tbody>${prev.map(r=>`<tr>${heads.map((_,i)=>`<td style="padding:6px 10px;font-size:12px;white-space:nowrap;max-width:240px;overflow:hidden;text-overflow:ellipsis">${esc(r[i]??'')}</td>`).join('')}</tr>`).join('')}</tbody></table></div>
+  ${fx.length?`<div class="f"><label>Valori uguali per tutte le righe (colonne non presenti nel file)</label><div class="row2">${fx.map(c=>`<div><small style="color:var(--muted)">${esc(c.l)}</small>${fxIn(c)}</div>`).join('')}</div></div>`:''}
+  <div class="f"><label>Righe già presenti nel foglio (${sheetRows(key).length})</label><select onchange="csvSet('mode',this.value)"><option value="append" ${m.mode==='append'?'selected':''}>Mantieni e aggiungi quelle del file</option><option value="replace" ${m.mode==='replace'?'selected':''}>Sostituisci tutto con quelle del file</option></select></div>
+  <div class="actions"><button class="btn ghost" onclick="closeM()">Annulla</button><button class="btn" onclick="runImport()">Importa ${data.length} ${data.length===1?'riga':'righe'}</button></div>`,'wide')}
 
  if(modal.type==='settings'){const f=modal.f,ph=modal.photo!==undefined?modal.photo:me.photo,canTeam=isSA()||(me.role!=='guest'&&!me.team);
   return mbg(`<h2>Impostazioni</h2>
@@ -828,8 +978,10 @@ function modalView(){
  if(modal.type==='meeting')return mbg(`<h2>Nuovo meeting</h2>
   <div class="f"><label>Titolo</label><input id="mt"></div>
   <div class="row2"><div class="f"><label>Data</label><input type="date" id="md" value="${iso(TODAY)}"></div><div class="f"><label>Ora</label><input type="time" id="mh" value="18:30"></div></div>
-  <div class="f"><label>Luogo</label><input id="mw"></div>
+  <div class="row2"><div class="f"><label>Modalità</label><select id="mmd" onchange="document.getElementById('mlkw').style.display=this.value==='online'?'':'none'"><option value="presenza">In presenza</option><option value="online">Online</option></select></div><div class="f"><label>Luogo / piattaforma</label><input id="mw"></div></div>
+  <div class="f" id="mlkw" style="display:none"><label>Link della call</label><input id="mlk" type="url" placeholder="https://meet.google.com/…"></div>
   <div class="f"><label>Team partecipanti</label>${Object.entries(TEAMS).map(([k,T])=>`<label style="display:inline-flex;gap:6px;margin-right:14px;align-items:center"><input type="checkbox" class="mtm" value="${k}" style="width:auto" ${isSA()||k===me.team?'checked':''}>${T.name}</label>`).join('')}</div>
+  <label style="display:flex;gap:8px;align-items:center;font-size:13px;margin-bottom:10px"><input type="checkbox" id="mnot" style="width:auto" checked> Invia una email ai team partecipanti${CLOUD?'':' (in demo non parte)'}</label>
   <div class="info">Il meeting viene aggiunto al calendario. Ogni team partecipante può proporre punti all'OdG dalle proprie note private.</div>
   <div class="actions"><button class="btn ghost" onclick="closeM()">Annulla</button><button class="btn" onclick="saveMeeting()">Crea</button></div>`);
  if(modal.type==='addMember'){const free=S.users.filter(u=>u.role!=='superadmin'&&(u.role!=='guest'||isSA())&&u.team!==modal.team&&(!u.team||isSA()));
@@ -881,9 +1033,12 @@ async function delComment(i){if(!confirm('Eliminare questo commento?'))return;co
  const o=S.tasks.find(x=>x.id===modal.t.id),c=o.c[i];if(!c||!can.delC(c))return;
  if(CLOUD){const r=await sb.rpc('delete_comment',{tid:o.id,idx:i,old_txt:c.x});if(r.error)return alert(r.error.message)}
  o.c.splice(i,1);const lt=CLOUD&&last.tasks.find(x=>x.id===o.id);if(lt)lt.c=clone(o.c);modal.t.c=o.c;modal.editC=null;if(!CLOUD)save();render()}
-function openEvent(id,d){const e=id?{...S.events.find(x=>x.id===id)}:{t:'',d:d||iso(TODAY),h:'18:30',where:'',team:isSA()?null:me.team,desc:''};if(!id&&!can.event())return;modal={type:'event',e};render()}
-function saveEvent(){const e=modal.e;Object.assign(e,{t:et.value.trim(),d:ed.value,h:eh.value,where:ew.value,team:etm.value||null,desc:eds.value});if(!e.t)return alert('Inserisci un titolo');
- if(e.id)S.events[S.events.findIndex(x=>x.id===e.id)]=e;else{e.id=nid(S.events);S.events.push(e)}save();closeM()}
+function openEvent(id,d){const e=id?{...S.events.find(x=>x.id===id)}:{t:'',d:d||iso(TODAY),h:'18:30',where:'',mode:'presenza',link:'',team:isSA()?null:me.team,desc:''};if(!id&&!can.event())return;modal={type:'event',e};render()}
+function saveEvent(){collectEv();const e=modal.e;e.t=(e.t||'').trim();if(!e.t)return alert('Inserisci un titolo');if(!e.d)return alert('Scegli la data');
+ e.mode=e.mode==='online'?'online':'presenza';
+ if(e.mode==='online'){e.link=(e.link||'').trim();if(!/^https?:\/\/\S+$/i.test(e.link))return alert('Evento online: inserisci il link della call (deve iniziare con https://).')}else e.link=null;
+ const notify=modal.notify!==undefined?modal.notify:!e.id;
+ if(e.id)S.events[S.events.findIndex(x=>x.id===e.id)]=e;else{e.id=nid(S.events);S.events.push(e)}save();closeM();if(notify)notifyEvent(e)}
 async function uploadFile(){const f=uf.files[0],l=ul.value.trim();if(!f&&!l)return alert('Seleziona un file o inserisci un link');
  let url=l||null;
  if(f&&CLOUD){if(f.size>50e6)return alert('Massimo 50 MB per file.');
@@ -891,8 +1046,9 @@ async function uploadFile(){const f=uf.files[0],l=ul.value.trim();if(!f&&!l)retu
   const r=await sb.storage.from('files').upload(path,f);if(r.error)return alert('Caricamento non riuscito: '+r.error.message);url='sb:'+path}
  S.files.unshift({id:nid(S.files),n:f?f.name:l.split('/').pop()||'Link',url,f:ufo.value,team:uv.value||null,by:me.id,d:iso(TODAY),sz:f?(f.size>1e6?(f.size/1e6).toFixed(1).replace('.',',')+' MB':Math.ceil(f.size/1e3)+' KB'):'link'});save();closeM()}
 function saveMeeting(){const t=mt.value.trim();if(!t)return alert('Inserisci un titolo');const teams=[...document.querySelectorAll('.mtm:checked')].map(i=>i.value);if(!teams.length)return alert('Scegli almeno un team');
- const ev={id:nid(S.events),t,d:md.value,h:mh.value,where:mw.value,team:teams.length===1?teams[0]:null,desc:'Meeting'};S.events.push(ev);
- const m={id:nid(S.meetings),t,ev:ev.id,teams,fixed:[],order:[]};S.meetings.push(m);selMeeting=m.id;save();closeM()}
+ const mode=mmd.value==='online'?'online':'presenza',link=mode==='online'?mlk.value.trim():null;if(!md.value)return alert('Scegli la data');if(mode==='online'&&!/^https?:\/\/\S+$/i.test(link))return alert('Meeting online: inserisci il link della call (https://…).');
+ const notify=mnot.checked,ev={id:nid(S.events),t,d:md.value,h:mh.value,where:mw.value,mode,link,team:teams.length===1?teams[0]:null,desc:'Meeting'};S.events.push(ev);
+ const m={id:nid(S.meetings),t,ev:ev.id,teams,fixed:[],order:[]};S.meetings.push(m);selMeeting=m.id;save();closeM();if(notify)notifyEvent(ev,teams)}
 function addMember(){if(mu.value){const u=S.users.find(x=>x.id===mu.value);u.team=modal.team;if(u.role==='guest'&&isSA())u.role='member'}else if(mn.value.trim()&&me2.value.trim()){if(CLOUD)return invite(mn.value.trim(),me2.value.trim(),'member',modal.team);S.users.push({id:'u'+Date.now(),name:mn.value.trim(),ini:ini(mn.value),email:me2.value.trim(),role:'member',team:modal.team})}else return alert('Scegli un utente o inserisci nome ed email');save();closeM()}
 function removeFromTeam(id){const u=S.users.find(x=>x.id===id);if(confirm('Rimuovere '+u.name+' dal team?')){u.team=null;save();render()}}
 function setUser(id,k,v){const u=S.users.find(x=>x.id===id);u[k]=v;if(k==='role'&&['guest','superadmin'].includes(v))u.team=null;save();render()}
