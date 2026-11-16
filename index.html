@@ -872,7 +872,7 @@ async function notifyEvent(ev,teams){
   const r=await fetch('/api/send-event',{method:'POST',headers:{'Content-Type':'application/json',Authorization:'Bearer '+session.access_token},
    body:JSON.stringify({event:{t:ev.t,d:ev.d,h:ev.h,where:ev.where,mode:ev.mode,link:ev.link,desc:ev.desc,team:ev.team},teams:teams||(ev.team?[ev.team]:[])})});
   const j=await r.json().catch(()=>({}));
-  if(r.ok)alert(`Email inviata a ${j.sent} ${j.sent===1?'persona':'persone'}${j.failed?` (${j.failed} non consegnate)`:''}.`);
+  if(r.ok)alert(`Email inviata a ${j.sent} ${j.sent===1?'persona':'persone'}${j.failed?` (${j.failed} non consegnate)`:''}.`+(j.failed&&j.reason?`\n\nMotivo indicato dal servizio email:\n${j.reason}`+(/only send|own email|verify a domain|testing emails/i.test(j.reason)?'\n\nCon il mittente di prova si può scrivere solo al proprio indirizzo: verifica un dominio su Resend e cambia MAIL_FROM.':''):''));
   else if(r.status===501)alert('Evento salvato, ma l\'invio email non è ancora configurato (serve la chiave del servizio email su Vercel: vedi README).');
   else alert('Evento salvato, ma l\'email non è partita: '+(j.error||('errore '+r.status)))}
  catch(e){alert('Evento salvato, ma l\'email non è partita: '+e.message)}}

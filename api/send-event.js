@@ -92,15 +92,16 @@ module.exports = async function handler(req, res) {
 
   const attach = [{ filename: 'invito.ics', content: Buffer.from(ics(ev), 'utf8').toString('base64') }];
   const subject = `Nuovo evento: ${ev.t} — ${longDate(ev.d).replace(/^\S+\s/, '')}${ev.h ? ' ore ' + ev.h : ''}`;
-  let sent = 0, failed = 0;
+  let sent = 0, failed = 0, reason = '';
   await Promise.all(to.map(async p => {
     const { html, text } = buildEmail(ev, (p.name || '').split(' ')[0] || 'ciao');
     try {
       const r = await fetch('https://api.resend.com/emails', { method: 'POST', headers: { Authorization: 'Bearer ' + apiKey, 'Content-Type': 'application/json' },
         body: JSON.stringify({ from, to: [p.email], subject, html, text, attachments: attach }) });
-      r.ok ? sent++ : failed++;
-    } catch (e) { failed++ }
+      if (r.ok) sent++;
+      else { failed++; if (!reason) { try { const j = await r.json(); reason = (j && (j.message || j.error && j.error.message || j.name)) || ('errore ' + r.status) } catch (e) { reason = 'errore ' + r.status } } }
+    } catch (e) { failed++; if (!reason) reason = e.message }
   }));
-  return res.status(200).json({ sent, failed });
+  return res.status(200).json({ sent, failed, reason });
 };
 module.exports._test = { buildEmail, ics, longDate };
