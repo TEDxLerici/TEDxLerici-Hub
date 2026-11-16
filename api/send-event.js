@@ -6,7 +6,8 @@
 //   SUPABASE_URL, SUPABASE_ANON_KEY   (opzionali: se mancano si usano quelli pubblici del sito)
 //
 // Sicurezza: la funzione NON accetta indirizzi email dal browser. Verifica chi chiama con il suo token Supabase,
-// controlla che sia team lead o superadmin e ricava i destinatari dai profili nel database.
+// controlla che sia team lead o superadmin e ricava i destinatari dai profili nel database
+// (tutta la crew = persone dei 4 team; un team = solo le persone di quel team).
 
 const SB_URL = process.env.SUPABASE_URL || 'https://qugfxkymtnfnkdasmwgt.supabase.co';
 const SB_KEY = process.env.SUPABASE_ANON_KEY || 'sb_publishable_g3Exxy0sebxbGIutdHrPZQ_7LBnHM-9';
@@ -107,23 +108,28 @@ module.exports = async function handler(req, res) {
   if (me.role === 'lead' && teams.some(t => t !== me.team)) return res.status(403).json({ error: 'Un team lead può invitare solo il proprio team o tutta la crew' });
   ev.teamName = teams.length === 1 ? TEAMS[teams[0]] : '';
 
-  // destinatari ricavati dal database: persone del/i team indicati (o tutta la crew) + superadmin, mai chi crea l'evento, mai ospiti
-  const to = profiles.filter(p => p.id !== uid && p.email && p.role !== 'guest' && /^[^\s@]+@[^\s@]+\.[^\s@]+$/.test(p.email) &&
-    (p.role === 'superadmin' || !teams.length || teams.includes(p.team))).slice(0, 80);
-  if (!to.length) return res.status(200).json({ sent: 0, failed: 0 });
+  // Destinatari, ricavati dal database:
+  //  - tutta la crew (nessun team indicato) -> tutte le persone dei 4 team;
+  //  - uno o più team -> solo le persone di quei team.
+  // Chi non ha un team e gli ospiti non ricevono nulla. Chi crea l'evento riceve la copia se appartiene a quel team.
+  const validMail = m => typeof m === 'string' && /^[^\s@]+@[^\s@]+\.[^\s@]+$/.test(m.trim());
+  const scope = profiles.filter(p => p.role !== 'guest' && TEAMS[p.team] && (!teams.length || teams.includes(p.team)));
+  const to = scope.filter(p => validMail(p.email)).slice(0, 80);
+  const senzaEmail = scope.filter(p => !validMail(p.email)).map(p => p.name || 'Senza nome');
+  if (!to.length) return res.status(200).json({ sent: 0, failed: 0, names: [], senzaEmail });
 
   const attach = [{ filename: 'invito.ics', content: Buffer.from(ics(ev), 'utf8').toString('base64') }];
   const subject = `Nuovo evento: ${ev.t} — ${longDate(ev.d).replace(/^\S+\s/, '')}${ev.h ? ' ore ' + ev.h : ''}`;
-  let sent = 0, failed = 0, reason = '';
+  let sent = 0, failed = 0, reason = '';const names = [];
   await Promise.all(to.map(async p => {
     const { html, text } = buildEmail(ev, (p.name || '').split(' ')[0] || 'ciao');
     try {
       const r = await fetch('https://api.resend.com/emails', { method: 'POST', headers: { Authorization: 'Bearer ' + apiKey, 'Content-Type': 'application/json' },
-        body: JSON.stringify({ from, to: [p.email], subject, html, text, attachments: attach }) });
-      if (r.ok) sent++;
+        body: JSON.stringify({ from, to: [p.email.trim()], subject, html, text, attachments: attach }) });
+      if (r.ok) { sent++; names.push(p.name || p.email); }
       else { failed++; if (!reason) { try { const j = await r.json(); reason = (j && (j.message || j.error && j.error.message || j.name)) || ('errore ' + r.status) } catch (e) { reason = 'errore ' + r.status } } }
     } catch (e) { failed++; if (!reason) reason = e.message }
   }));
-  return res.status(200).json({ sent, failed, reason });
+  return res.status(200).json({ sent, failed, reason, names, senzaEmail });
 };
 module.exports._test = { buildEmail, ics, longDate };
