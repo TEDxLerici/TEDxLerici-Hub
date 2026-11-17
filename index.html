@@ -261,7 +261,7 @@ sheet_rows:[
 };
 const CLOUD=!!(CFG.url&&CFG.key&&window.supabase);
 const sb=CLOUD?supabase.createClient(CFG.url,CFG.key):null;
-let S, last=null, loading=CLOUD, bootErr='', HAS_ASG=true, HAS_NUM=true, HAS_MIN=true, HAS_SUG=true, HAS_PROF=true, HAS_SHEETS=true, HAS_ACC=true, HAS_COLS=true, HAS_EVX=true;
+let S, last=null, loading=CLOUD, bootErr='', HAS_ASG=true, HAS_NUM=true, HAS_MIN=true, HAS_SUG=true, HAS_PROF=true, HAS_SHEETS=true, HAS_ACC=true, HAS_COLS=true, HAS_EVX=true, HAS_EVY=true;
 if(CLOUD)S={users:[],tasks:[],events:[],files:[],notes:[],meetings:[],folders:[],suggestions:[],sheet_rows:[],sheet_cols:[]};
 else{try{S=JSON.parse(localStorage.getItem('tedxl2'))}catch(e){} if(!S||!S.meetings)S=JSON.parse(JSON.stringify(seed));}
 if(!S.suggestions)S.suggestions=[];
@@ -281,14 +281,14 @@ const save=()=>{if(CLOUD){sync();return}try{localStorage.setItem('tedxl2',JSON.s
 const TABLES=['tasks','events','files','notes','meetings'];
 async function load(){
  const names=['profiles',...TABLES,'folders'];
- const res=await Promise.all([...names.map(n=>sb.from(n).select('*')),sb.from('suggestions').select('*'),sb.from('sheet_rows').select('*'),sb.from('sheet_cols').select('*'),sb.from('events').select('mode').limit(1)]);
- const rpr=res.pop(),rco=res.pop(),rsh=res.pop(),rs=res.pop();
+ const res=await Promise.all([...names.map(n=>sb.from(n).select('*')),sb.from('suggestions').select('*'),sb.from('sheet_rows').select('*'),sb.from('sheet_cols').select('*'),sb.from('events').select('mode').limit(1),sb.from('events').select('by,h2,teams,people,emails').limit(1)]);
+ const rey=res.pop(),rpr=res.pop(),rco=res.pop(),rsh=res.pop(),rs=res.pop();
  const err=res.find(r=>r.error);if(err)throw err.error;
  const [p,...rest]=res;S.users=p.data;
  TABLES.forEach((t,i)=>S[t]=rest[i].data);
  S.folders=rest[TABLES.length].data.map(x=>x.name).sort();
  HAS_SUG=!rs.error;S.suggestions=HAS_SUG?rs.data:[];
- HAS_COLS=!rco.error;S.sheet_cols=HAS_COLS?rco.data:[];S.sheet_cols.forEach(c=>c.o=c.o||[]);HAS_EVX=!rpr.error;
+ HAS_COLS=!rco.error;S.sheet_cols=HAS_COLS?rco.data:[];S.sheet_cols.forEach(c=>c.o=c.o||[]);HAS_EVX=!rpr.error;HAS_EVY=!rey.error;S.events.forEach(e=>{e.teams=e.teams||[];e.people=e.people||[];e.emails=e.emails||[]});
  HAS_SHEETS=!rsh.error;S.sheet_rows=HAS_SHEETS?rsh.data:[];
  tesOK=false;if(HAS_SHEETS){try{const t=await sb.rpc('tes_status');tesOK=t.data===true}catch(e){}}
  HAS_ASG=!S.tasks.length||'asg' in S.tasks[0];HAS_NUM=!S.tasks.length||'num' in S.tasks[0];
@@ -310,7 +310,7 @@ async function boot(){
 let syncing=Promise.resolve();
 function sync(){syncing=syncing.then(doSync);return syncing}
 async function doSync(){
- const errs=[];const strip=(t,o)=>{if(t==='tasks'){const {c,...r}=o;if(!HAS_ASG)delete r.asg;if(!HAS_NUM)delete r.num;return r}if(t==='events'&&!HAS_EVX){const {mode,link,...r}=o;return r}if(t==='meetings'&&!HAS_MIN){const {minutes,...r}=o;return r}return o};
+ const errs=[];const strip=(t,o)=>{if(t==='tasks'){const {c,...r}=o;if(!HAS_ASG)delete r.asg;if(!HAS_NUM)delete r.num;return r}if(t==='events'){let r={...o};if(!HAS_EVX){delete r.mode;delete r.link}if(!HAS_EVY){delete r.by;delete r.h2;delete r.teams;delete r.people;delete r.emails}return r}if(t==='meetings'&&!HAS_MIN){const {minutes,...r}=o;return r}return o};
  for(const t of [...TABLES,...(HAS_SUG?['suggestions']:[]),...(HAS_SHEETS?['sheet_rows']:[]),...(HAS_COLS?['sheet_cols']:[])]){
   const old=new Map(last[t].map(o=>[o.id,JSON.stringify(strip(t,o))])),now=new Map(S[t].map(o=>[o.id,o]));
   const up=S[t].filter(o=>old.get(o.id)!==JSON.stringify(strip(t,o))).map(o=>strip(t,o));
@@ -369,6 +369,13 @@ const av=(u,team,cls='')=>{const T=TEAMS[team||u.team]||{c:'#777',bg:'#77777724'
  const ph=typeof u.photo==='string'&&/^data:image\/(jpeg|png|webp);base64,[A-Za-z0-9+\/=]+$/.test(u.photo);
  return ph?`<div class="av ${cls}" style="background:url('${u.photo}') center/cover;box-shadow:0 0 0 1.5px ${T.c}"></div>`:`<div class="av ${cls}" style="background:${T.bg};color:${T.c}">${esc(u.ini||ini(u.name||'?'))}</div>`};
 const roleTag=r=>`<span class="role" style="background:${ROLES[r].bg};color:${ROLES[r].c}">${ROLES[r].l}</span>`;
+const ALLT=Object.keys(TEAMS);
+const evTeams=e=>e.teams&&e.teams.length?e.teams:(e.team?[e.team]:ALLT);
+const evAll=e=>evTeams(e).length===ALLT.length;
+const evRange=e=>e.h2?e.h+'–'+e.h2:e.h;
+const canEditEv=e=>!e.id?can.event():(e.by?e.by===me.id:(HAS_EVY?isSA():can.event(e)));
+const validMail=m=>/^[^\s@]+@[^\s@]+\.[^\s@]+$/.test(String(m).trim());
+const teamsChips=e=>evAll(e)?teamChip(null):evTeams(e).map(teamChip).join(' ');
 const teamChip=k=>k?`<span class="chip" style="background:${TEAMS[k].bg};color:${TEAMS[k].c}"><span class="dot" style="background:${TEAMS[k].c}"></span>${TEAMS[k].name}</span>`:`<span class="chip" style="background:var(--soft);color:var(--ink2)">Tutta la crew</span>`;
 const inbox=()=>S.tasks.filter(t=>!t.own&&(isSA()||isLead(t.team))).length;
 /* stato derivato dalle date (nessuna percentuale) */
@@ -492,7 +499,7 @@ function overview(){const days=Math.ceil((EVENT-TODAY)/864e5);
  ${ib.length?`<div class="card pad" style="margin-bottom:20px;border-color:var(--warn-c)"><h3>📥 Richieste da assegnare</h3><p style="color:var(--muted);font-size:12px;margin:4px 0 8px">Task arrivate al tuo team: assegnale a una persona.</p>${ib.map(t=>`<div class="li"><div style="flex:1"><b>${esc(t.t)}</b><small>${t.req?'Da '+TEAMS[t.req].name+' → ':''}${TEAMS[t.team].name} · scade ${fmt(t.e)}</small></div><button class="btn sm" onclick="openTask(${t.id})">Assegna</button></div>`).join('')}</div>`:''}
  ${me.role!=='guest'?`<div class="card pad" style="margin-bottom:20px"><h3>Le mie task</h3>${mine.map(t=>`<div class="li" style="cursor:pointer" onclick="openTask(${t.id})"><span class="dot" style="background:${TEAMS[t.team].c}"></span><div style="flex:1">${esc(t.t)}<small>${tnum(t)} · scade ${fmt(t.e)}${t.own!==me.id?' · collaboratore':''}</small></div>${stChip(t)}${delBtn(t)}</div>`).join('')||'<div class="empty">Nessuna task assegnata.</div>'}</div>`:''}
  <div class="card pad"><h3 style="margin-bottom:10px">Task per team</h3>${Object.entries(TEAMS).map(([k,T])=>{const ts=S.tasks.filter(t=>t.team===k),r=ts.filter(t=>taskState(t).k==='run').length;return `<div class="li"><span class="dot" style="background:${T.c}"></span><div style="flex:1">${T.name}</div><span style="color:var(--muted);font-size:12px">${ts.length} task · ${r} in corso</span></div>`}).join('')}</div>
- </div><div class="card pad"><h3>Prossimi eventi</h3>${up.map(e=>`<div class="li" style="cursor:pointer" onclick="openEvent(${e.id})"><div style="text-align:center;width:40px"><b style="font-size:18px">${new Date(e.d).getDate()}</b><small>${new Date(e.d).toLocaleDateString('it-IT',{month:'short'})}</small></div><div style="flex:1"><b>${esc(e.t)}</b><small>${e.h} ${e.where?'· '+esc(e.where):''}</small></div>${teamChip(e.team)}</div>`).join('')||'<div class="empty">Nessun evento.</div>'}
+ </div><div class="card pad"><h3>Prossimi eventi</h3>${up.map(e=>`<div class="li" style="cursor:pointer" onclick="openEvent(${e.id})"><div style="text-align:center;width:40px"><b style="font-size:18px">${new Date(e.d).getDate()}</b><small>${new Date(e.d).toLocaleDateString('it-IT',{month:'short'})}</small></div><div style="flex:1"><b>${esc(e.t)}</b><small>${evRange(e)} ${e.where?'· '+esc(e.where):''}</small></div>${teamsChips(e)}</div>`).join('')||'<div class="empty">Nessun evento.</div>'}
  <button class="btn ghost sm" style="margin-top:10px;width:100%" onclick="go('calendar')">Apri calendario</button></div></div>`}
 
 /* ---------- TIMELINE ---------- */
@@ -537,7 +544,7 @@ function calView(){
  <div style="margin-left:auto;display:flex;gap:6px;flex-wrap:wrap">${teamChip(null)}${Object.keys(TEAMS).map(teamChip).join('')}</div></div>
  <div class="cal">${['LUN','MAR','MER','GIO','VEN','SAB','DOM'].map(d=>`<div class="dh">${d}</div>`).join('')}
  ${cells.slice(0,rows).map(d=>{const ds=iso(d),ev=S.events.filter(e=>e.d===ds),dl=S.tasks.filter(t=>t.e===ds);return `<div class="d ${d.getMonth()!==m?'o':''} ${ds===iso(TODAY)?'today':''}" onclick="${can.event()?`openEvent(null,'${ds}')`:''}"><div class="num">${d.getDate()}</div>
- ${ev.map(e=>`<div class="ce" style="background:${e.team?TEAMS[e.team].c:'#4a4a52'}" onclick="event.stopPropagation();openEvent(${e.id})">${e.h} ${esc(e.t)}</div>`).join('')}
+ ${ev.map(e=>`<div class="ce" style="background:${e.team?TEAMS[e.team].c:'#4a4a52'}" onclick="event.stopPropagation();openEvent(${e.id})" title="${evRange(e)}">${e.h} ${esc(e.t)}</div>`).join('')}
  ${dl.map(t=>`<div class="ce" style="background:var(--card);color:${TEAMS[t.team].c};border:1px solid ${TEAMS[t.team].c}" onclick="event.stopPropagation();openTask(${t.id})">⏱ ${esc(t.t)}</div>`).join('')}</div>`}).join('')}</div>
  <div class="foot"><span>■ Evento</span><span>□ ⏱ Scadenza task</span><span style="margin-left:auto">${can.event()?'Clicca un giorno per creare un evento':'Solo i team lead e il superadmin possono creare eventi'}</span></div></div>`}
 
@@ -561,7 +568,7 @@ function meetView(){
  return header('Meeting','Meeting e ordini del giorno',can.meeting()?`<button class="btn" onclick="modal={type:'meeting'};render()">+ Nuovo meeting</button>`:'')+BODY+`<div class="two">
  <div><div class="card pad" style="margin-bottom:20px"><div style="display:flex;gap:8px;flex-wrap:wrap;margin-bottom:14px">${S.meetings.map(x=>`<button class="btn ${x===m?'':'ghost'} sm" onclick="selMeeting=${x.id};render()">${esc(x.t)}</button>`).join('')}</div>
  ${m?(()=>{const e=S.events.find(ev=>ev.id===m.ev);const ag=agendaOf(m);return `<h3 style="font-size:20px">Ordine del giorno · ${esc(m.t)}</h3>
- <p style="color:var(--muted);margin:4px 0 10px">${e?fmtL(e.d)+' · '+e.h+(e.where?' · '+esc(e.where):''):'Data da definire'}</p>
+ <p style="color:var(--muted);margin:4px 0 10px">${e?fmtL(e.d)+' · '+evRange(e)+(e.where?' · '+esc(e.where):''):'Data da definire'}</p>
  <div style="display:flex;gap:6px;flex-wrap:wrap;margin-bottom:8px">${m.teams.map(teamChip).join('')}</div>
  <ol class="agenda">${ag.map((p,i)=>`<li><span class="nr">${i+1}</span><div style="flex:1">${esc(p.x)}<small style="display:block;color:var(--muted);font-size:11px;margin-top:2px">${p.fixed?'Punto fisso':'Proposto da '+TEAMS[p.team].name+' · '+esc(U(p.by).name)}</small></div>${p.team?teamChip(p.team):''}</li>`).join('')||'<div class="empty">Nessun punto all\'ordine del giorno.</div>'}</ol>
  <div class="actions">${can.meeting()?`<button class="btn ghost sm" onclick="const v=prompt('Nuovo punto fisso');if(v){S.meetings.find(x=>x.id===${m.id}).fixed.push(v);save();render()}">+ Punto fisso</button>`:''}<button class="btn sm" onclick="exportAgenda(${m.id})">Copia OdG</button></div>`})():'<div class="empty">Nessun meeting.</div>'}</div>${m?minutesCard(m)+sugCard(m):''}</div>
@@ -588,7 +595,7 @@ function sugCard(m){const all=S.suggestions.filter(g=>g.meeting===m.id),pend=all
  ${acc||dis?`<p class="hint" style="margin-top:6px">${acc} accettate · ${dis} scartate</p>`:''}</div>`}
 function addNote(){const v=nn.value.trim();if(!v)return;S.notes.unshift({id:nid(S.notes),team:me.team||'MK',by:me.id,x:v,mt:null,d:iso(TODAY)});save();render()}
 function exportAgenda(id){const m=S.meetings.find(x=>x.id===id),e=S.events.find(ev=>ev.id===m.ev);
- const txt=`ORDINE DEL GIORNO — ${m.t}\n${e?fmtL(e.d)+' ore '+e.h+(e.where?' — '+e.where:''):''}\n\n`+agendaOf(m).map((p,i)=>`${i+1}. ${p.x}${p.team?' ['+TEAMS[p.team].name+']':''}`).join('\n');
+ const txt=`ORDINE DEL GIORNO — ${m.t}\n${e?fmtL(e.d)+' ore '+evRange(e)+(e.where?' — '+e.where:''):''}\n\n`+agendaOf(m).map((p,i)=>`${i+1}. ${p.x}${p.team?' ['+TEAMS[p.team].name+']':''}`).join('\n');
  navigator.clipboard?.writeText(txt).then(()=>alert('Ordine del giorno copiato negli appunti.'),()=>alert(txt))}
 
 /* ---------- TEAM ---------- */
@@ -687,7 +694,7 @@ function teamDash(k,open){
    <div class="grid" style="grid-template-columns:repeat(auto-fill,minmax(220px,1fr));gap:12px">${sh.map(s=>{const d=SHEETS[s],n=(d.locked&&!tesOK)?null:S.sheet_rows.filter(r=>r.sheet===s).length;
     return `<div class="card pad shcard" style="cursor:pointer;border-left:3px solid ${T.c}" onclick="setTeamTab('${s}')"><div style="font-size:22px">${d.ic}</div><b style="display:block;margin:6px 0 2px">${d.t}</b><small style="color:var(--muted)">${d.desc}</small><div style="margin-top:8px;font-size:12px;color:var(--ink2)">${n===null?'🔒 Richiede password':n+' '+(n===1?'riga':'righe')}</div></div>`}).join('')}</div></div>
   </div><div>
-  <div class="card pad" style="margin-bottom:20px"><h3>Prossimi eventi</h3>${ev.map(e=>`<div class="li" style="cursor:pointer" onclick="openEvent(${e.id})"><div style="text-align:center;width:40px"><b style="font-size:18px">${new Date(e.d).getDate()}</b><small>${new Date(e.d).toLocaleDateString('it-IT',{month:'short'})}</small></div><div style="flex:1"><b>${esc(e.t)}</b><small>${e.h} ${e.where?'· '+esc(e.where):''}</small></div></div>`).join('')||'<div class="empty">Nessun evento in arrivo.</div>'}</div>
+  <div class="card pad" style="margin-bottom:20px"><h3>Prossimi eventi</h3>${ev.map(e=>`<div class="li" style="cursor:pointer" onclick="openEvent(${e.id})"><div style="text-align:center;width:40px"><b style="font-size:18px">${new Date(e.d).getDate()}</b><small>${new Date(e.d).toLocaleDateString('it-IT',{month:'short'})}</small></div><div style="flex:1"><b>${esc(e.t)}</b><small>${evRange(e)} ${e.where?'· '+esc(e.where):''}</small></div></div>`).join('')||'<div class="empty">Nessun evento in arrivo.</div>'}</div>
   <div class="card pad"><h3>Persone</h3>${people.map(u=>`<div class="li">${av(u)}<div style="flex:1"><b>${esc(u.name)}</b><small>${ROLES[u.role].l}</small></div></div>`).join('')||'<div class="empty">Nessun membro nel team.</div>'}
    ${extra.length?`<p style="font-size:11px;letter-spacing:.1em;color:var(--muted);margin:12px 0 2px">CON ACCESSO CONCESSO</p>${extra.map(u=>`<div class="li">${av(u)}<div style="flex:1"><b>${esc(u.name)}</b><small>${u.team?TEAMS[u.team].name:'Senza team'}</small></div></div>`).join('')}`:''}</div>
   </div></div>`}
@@ -866,18 +873,41 @@ function runImport(){const m=modal,key=m.key,sh=SHEETS[key];if(!m||m.type!=='csv
  closeM();alert(`Importate ${rows.length} righe${newCols.length?` e create ${newCols.length} nuove colonne`:''}${skipped?` (${skipped} righe vuote ignorate)`:''}.`)}
 
 /* ---- email agli interessati quando si crea un evento ---- */
-async function notifyEvent(ev,teams){
+async function notifyEvent(ev,teams,opt){opt=opt||{};
  if(!CLOUD)return alert('Modalità demo: l\'evento è salvato, ma nessuna email viene inviata.');
+ const upd=!!opt.update;
  try{const {data:{session}}=await sb.auth.getSession();if(!session)throw new Error('sessione scaduta, rientra nell\'app');
   const r=await fetch('/api/send-event',{method:'POST',headers:{'Content-Type':'application/json',Authorization:'Bearer '+session.access_token},
-   body:JSON.stringify({event:{t:ev.t,d:ev.d,h:ev.h,where:ev.where,mode:ev.mode,link:ev.link,desc:ev.desc,team:ev.team},teams:teams||(ev.team?[ev.team]:[])})});
+   body:JSON.stringify({event:{id:ev.id,t:ev.t,d:ev.d,h:ev.h,h2:ev.h2||'',where:ev.where,mode:ev.mode,link:ev.link,desc:ev.desc,team:ev.team},teams:teams||evTeams(ev),people:ev.people||[],emails:ev.emails||[],update:upd,changes:opt.changes||[]})});
   const j=await r.json().catch(()=>({}));
-  if(r.ok)alert(`Email inviata a ${j.sent} ${j.sent===1?'persona':'persone'}${j.failed?` (${j.failed} non consegnate)`:''}.`+((j.names&&j.names.length)?`\n\nDestinatari: ${j.names.slice(0,12).join(', ')}${j.names.length>12?' e altri '+(j.names.length-12):''}.`:'')+((j.senzaEmail&&j.senzaEmail.length)?`\n\nSenza email nel profilo (non raggiunti): ${j.senzaEmail.join(', ')}.`:'')+(j.promemoria==='inviato'?'\n\nTi ho mandato anche il promemoria dell\'evento.':j.promemoria==='fallito'?'\n\nIl promemoria per te non è stato consegnato.':'\n\nIl promemoria per te non è partito: nel tuo profilo non c\'è un\'email.')+(j.failed&&j.reason?`\n\nMotivo indicato dal servizio email:\n${j.reason}`+(/only send|own email|verify a domain|testing emails/i.test(j.reason)?'\n\nCon il mittente di prova si può scrivere solo al proprio indirizzo: verifica un dominio su Resend e cambia MAIL_FROM.':''):''));
+  if(r.ok)alert(`${upd?'Aggiornamento inviato':'Email inviata'} a ${j.sent} ${j.sent===1?'persona':'persone'}${j.failed?` (${j.failed} non consegnate)`:''}.`+((j.names&&j.names.length)?`\n\nDestinatari: ${j.names.slice(0,12).join(', ')}${j.names.length>12?' e altri '+(j.names.length-12):''}.`:'')+((j.senzaEmail&&j.senzaEmail.length)?`\n\nSenza email nel profilo (non raggiunti): ${j.senzaEmail.join(', ')}.`:'')+(j.promemoria==='inviato'?'\n\nTi ho mandato anche il promemoria dell\'evento.':j.promemoria==='fallito'?'\n\nIl promemoria per te non è stato consegnato.':'\n\nIl promemoria per te non è partito: nel tuo profilo non c\'è un\'email.')+(j.failed&&j.reason?`\n\nMotivo indicato dal servizio email:\n${j.reason}`+(/only send|own email|verify a domain|testing emails/i.test(j.reason)?'\n\nCon il mittente di prova si può scrivere solo al proprio indirizzo: verifica un dominio su Resend e cambia MAIL_FROM.':''):''));
   else if(r.status===501)alert('Evento salvato, ma l\'invio email non è ancora configurato (serve la chiave del servizio email su Vercel: vedi README).');
   else alert('Evento salvato, ma l\'email non è partita: '+(j.error||('errore '+r.status)))}
  catch(e){alert('Evento salvato, ma l\'email non è partita: '+e.message)}}
-function collectEv(){const g=id=>document.getElementById(id),e=modal.e;
- if(g('et'))e.t=g('et').value;if(g('ed'))e.d=g('ed').value;if(g('eh'))e.h=g('eh').value;if(g('ew'))e.where=g('ew').value;if(g('etm'))e.team=g('etm').value||null;if(g('eds'))e.desc=g('eds').value;if(g('elk'))e.link=g('elk').value;if(g('enot'))modal.notify=g('enot').checked}
+/* firma dei campi dell'evento: serve a capire se è stato modificato */
+const evSig=e=>JSON.stringify([e.t,e.d,e.h,e.h2||'',e.mode,e.where||'',e.mode==='online'?(e.link||''):'',[...evTeams(e)].sort(),[...(e.people||[])].sort(),[...(e.emails||[])].sort(),e.desc||'']);
+function evChanges(o,e){const c=[],nm=k=>TEAMS[k]?TEAMS[k].name:k,tl=x=>evAll(x)?'Tutta la crew':evTeams(x).map(nm).join(', '),pl=x=>(x.people||[]).map(id=>{const u=S.users.find(y=>y.id===id);return u?u.name:id}).concat(x.emails||[]).join(', ')||'nessuna';
+ if(o.t!==e.t)c.push(`Titolo: ${o.t} → ${e.t}`);if(o.d!==e.d)c.push(`Data: ${fmtL(o.d)} → ${fmtL(e.d)}`);
+ if(o.h!==e.h||(o.h2||'')!==(e.h2||''))c.push(`Orario: ${evRange(o)} → ${evRange(e)}`);
+ if(o.mode!==e.mode)c.push(`Modalità: ${o.mode==='online'?'online':'in presenza'} → ${e.mode==='online'?'online':'in presenza'}`);
+ if((o.where||'')!==(e.where||''))c.push(`Luogo: ${o.where||'—'} → ${e.where||'—'}`);
+ if(e.mode==='online'&&(o.link||'')!==(e.link||''))c.push('Link della call aggiornato');
+ if(tl(o)!==tl(e))c.push(`Team coinvolti: ${tl(o)} → ${tl(e)}`);
+ if(pl(o)!==pl(e))c.push(`Persone dedicate: ${pl(o)} → ${pl(e)}`);
+ if((o.desc||'')!==(e.desc||''))c.push('Descrizione aggiornata');return c}
+function collectEv(){const g=id=>document.getElementById(id),e=modal.e;if(!modal.edit)return;
+ if(g('et'))e.t=g('et').value;if(g('ed'))e.d=g('ed').value;if(g('eh'))e.h=g('eh').value;if(g('eh2'))e.h2=g('eh2').value;if(g('ew'))e.where=g('ew').value;if(g('eds'))e.desc=g('eds').value;if(g('elk'))e.link=g('elk').value;
+ if(g('evform')){const all=document.querySelectorAll('.etk'),ca=document.getElementById('etall');if(all.length)e.teams=ca&&ca.checked?[...ALLT]:[...document.querySelectorAll('.etk:checked')].map(i=>i.value);
+  if(document.querySelector('.epu')||modal.ppl===false)e.people=modal.ppl?[...document.querySelectorAll('.epu:checked')].map(i=>i.value):[]}
+ if(g('enot'))modal.notifyUpd=g('enot').checked}
+function evDirty(){collectEv();const w=document.getElementById('enotw');if(w)w.style.display=modal.e.id&&evSig(modal.e)!==modal.sig?'':'none'}
+function editEv(){modal.edit=true;render()}
+function evTeamPick(k){collectEv();const e=modal.e;if(k==='ALL')e.teams=document.getElementById('etall').checked?[...ALLT]:[];render()}
+function evTogglePpl(on){collectEv();modal.ppl=on;if(!on){modal.e.people=[];modal.e.emails=[]}render()}
+function addEvMail(){collectEv();const i=document.getElementById('eml'),v=(i.value||'').trim().toLowerCase();if(!v)return;
+ if(!validMail(v))return alert('Indirizzo email non valido.');const e=modal.e;e.emails=e.emails||[];if(e.emails.includes(v))return alert('Indirizzo già aggiunto.');
+ if(e.emails.length>=10)return alert('Puoi aggiungere al massimo 10 indirizzi a mano.');e.emails.push(v);render();setTimeout(()=>{const x=document.getElementById('eml');if(x)x.focus()},0)}
+function delEvMail(i){collectEv();modal.e.emails.splice(i,1);render()}
 
 /* ================= MODALI ================= */
 const mbg=(inner,cls='')=>{const a=inner.indexOf('</h2>'),b=inner.lastIndexOf('<div class="actions"');
@@ -910,19 +940,40 @@ function modalView(){
   <div class="actions">${!isNew&&can.del(t)?`<button class="x-btn" style="margin-right:auto" onclick="delTask()">Elimina task</button>`:''}
   ${!isNew&&can.take(t)?`<button class="btn ghost" onclick="takeTask()">Prendi in carico</button>`:''}
   <button class="btn ghost" onclick="closeM()">${ed||asg?'Annulla':'Chiudi'}</button>${ed||asg?`<button class="btn" onclick="saveTask()">${isNew&&ext?'Invia richiesta':isNew?'Crea task':'Salva'}</button>`:''}</div>`)}
- if(modal.type==='event'){const e=modal.e,ed=can.event(e.id?e:null)&&(e.id?true:true);
-  const teams=isSA()?[null,...Object.keys(TEAMS)]:[me.team,null].filter((v,i,a)=>a.indexOf(v)===i);
-  return mbg(`<h2>${e.id?(ed?'Modifica evento':esc(e.t)):'Nuovo evento'}</h2>
-  ${!ed?`<div class="lock">🔒 Solo il team lead del team o il superadmin possono modificare questo evento.</div>`:''}
-  <div class="f"><label>Titolo</label><input id="et" value="${esc(e.t)}" ${ed?'':'disabled'}></div>
-  <div class="row2"><div class="f"><label>Data</label><input type="date" id="ed" value="${e.d}" ${ed?'':'disabled'}></div><div class="f"><label>Ora</label><input type="time" id="eh" value="${e.h}" ${ed?'':'disabled'}></div></div>
-  <div class="row2"><div class="f"><label>Modalità</label><select id="emd" ${ed?'':'disabled'} onchange="collectEv();modal.e.mode=this.value;render()"><option value="presenza" ${e.mode!=='online'?'selected':''}>In presenza</option><option value="online" ${e.mode==='online'?'selected':''}>Online</option></select></div><div class="f"><label>Luogo${e.mode==='online'?' / piattaforma':''}</label><input id="ew" value="${esc(e.where)}" ${ed?'':'disabled'}></div></div>
-  ${e.mode==='online'?`<div class="f"><label>Link della call</label><input id="elk" type="url" placeholder="https://meet.google.com/…" value="${esc(e.link||'')}" ${ed?'':'disabled'}></div>`:''}
-  <div class="row2"><div class="f"><label>Per</label><select id="etm" ${ed?'':'disabled'}>${(ed?teams:[e.team]).map(k=>`<option value="${k||''}" ${e.team===k?'selected':''}>${k?TEAMS[k].name:'Tutta la crew'}</option>`).join('')}</select></div><div></div></div>
-  <div class="f"><label>Descrizione</label><textarea id="eds" ${ed?'':'disabled'}>${esc(e.desc)}</textarea></div>
-  ${ed?`<label style="display:flex;gap:8px;align-items:flex-start;font-size:13px"><input type="checkbox" id="enot" style="width:auto;margin-top:3px" ${(modal.notify!==undefined?modal.notify:!e.id)?'checked':''}><span>${e.id?'Avvisa di nuovo via email':'Invia subito una email'} a ${e.team?'tutte le persone del team '+TEAMS[e.team].name:'tutta la crew (le persone dei 4 team)'} con titolo, data, ora, luogo${e.mode==='online'?', link della call':''} e descrizione.${CLOUD?'':' <i>(In modalità demo non parte nessuna email.)</i>'}</span></label>`:''}
-  ${e.id&&S.meetings.find(m=>m.ev===e.id)?`<button class="btn ghost sm" onclick="selMeeting=${S.meetings.find(m=>m.ev===e.id).id};modal=null;go('meetings')">Vedi ordine del giorno →</button>`:''}
-  <div class="actions">${e.id&&ed?`<button class="x-btn" style="margin-right:auto" onclick="if(confirm('Eliminare l\\'evento?')){S.events=S.events.filter(x=>x.id!==${e.id});save();closeM()}">Elimina</button>`:''}<button class="btn ghost" onclick="closeM()">${ed?'Annulla':'Chiudi'}</button>${ed?`<button class="btn" onclick="saveEvent()">Salva</button>`:''}</div>`)}
+ if(modal.type==='event'){const e=modal.e,ed=!!modal.edit,mine=canEditEv(e),creator=e.by?(S.users.find(u=>u.id===e.by)||{}).name:'';
+  const mt=S.meetings.find(m=>e.id&&m.ev===e.id),mtBtn=mt?`<button class="btn ghost sm" onclick="selMeeting=${mt.id};modal=null;go('meetings')">Vedi ordine del giorno →</button>`:'';
+  const peopleL=(e.people||[]).map(id=>{const u=S.users.find(y=>y.id===id);return u?esc(u.name):''}).filter(Boolean).concat((e.emails||[]).map(esc));
+  if(!ed){
+   return mbg(`<h2 style="display:flex;align-items:center;gap:10px"><span style="flex:1">${esc(e.t)}</span>${mine?`<button class="btn ghost sm" title="Modifica evento" aria-label="Modifica evento" onclick="editEv()">✎</button>`:''}</h2>
+   <div class="li"><div style="flex:1"><small>Quando</small><b>${esc(fmtL(e.d))} · ore ${esc(evRange(e))}</b></div></div>
+   <div class="li"><div style="flex:1"><small>${e.mode==='online'?'Online':'In presenza'}</small><b>${e.where?esc(e.where):'Luogo da definire'}</b></div></div>
+   ${e.mode==='online'&&e.link?`<div class="li"><div style="flex:1"><small>Link della call</small><a href="${esc(e.link)}" target="_blank" rel="noopener" style="color:var(--red);font-weight:700;word-break:break-all">${esc(e.link)}</a></div></div>`:''}
+   <div class="li"><div style="flex:1"><small>Team coinvolti</small><div style="display:flex;gap:6px;flex-wrap:wrap;margin-top:4px">${teamsChips(e)}</div></div></div>
+   ${peopleL.length?`<div class="li"><div style="flex:1"><small>Persone dedicate</small><b style="font-weight:600">${peopleL.join(', ')}</b></div></div>`:''}
+   ${creator?`<div class="li"><div style="flex:1"><small>Creato da</small><b>${esc(creator)}</b></div></div>`:''}
+   ${e.desc?`<div class="f" style="margin-top:12px"><label>Descrizione</label><p style="white-space:pre-line;font-size:14px;line-height:1.55">${esc(e.desc)}</p></div>`:''}
+   ${!mine?`<div class="lock">🔒 Solo ${creator?esc(creator)+', che ha creato l\'evento,':'chi ha creato l\'evento'} può modificarlo.</div>`:''}
+   ${mtBtn}
+   <div class="actions"><button class="btn" onclick="closeM()">Chiudi</button></div>`)}
+  const allowed=isSA()?ALLT:[me.team].filter(Boolean),crew=(e.teams||[]).length===ALLT.length,others=S.users.filter(u=>u.id!==me.id&&u.role!=='guest'),dirty=!!e.id&&evSig(e)!==modal.sig;
+  return mbg(`<h2>${e.id?'Modifica evento':'Nuovo evento'}</h2>
+  <div id="evform" oninput="evDirty()" onchange="evDirty()">
+  <div class="f"><label>Titolo evento</label><input id="et" value="${esc(e.t)}"></div>
+  <div class="row2"><div class="f"><label>Data</label><input type="date" id="ed" value="${e.d}"></div><div></div></div>
+  <div class="row2"><div class="f"><label>Orario inizio</label><input type="time" id="eh" value="${e.h}"></div><div class="f"><label>Orario fine</label><input type="time" id="eh2" value="${e.h2||''}"></div></div>
+  <div class="row2"><div class="f"><label>Modalità</label><select id="emd" onchange="collectEv();modal.e.mode=this.value;render()"><option value="presenza" ${e.mode!=='online'?'selected':''}>In presenza</option><option value="online" ${e.mode==='online'?'selected':''}>Online</option></select></div><div class="f"><label>Luogo${e.mode==='online'?' / piattaforma':''}</label><input id="ew" value="${esc(e.where)}"></div></div>
+  ${e.mode==='online'?`<div class="f"><label>Link della call</label><input id="elk" type="url" placeholder="https://meet.google.com/…" value="${esc(e.link||'')}"></div>`:''}
+  <div class="f"><label>Team coinvolti</label><div class="pick" style="max-height:none">
+   <label><input type="checkbox" id="etall" ${crew?'checked':''} onchange="evTeamPick('ALL')"><b>Tutta la crew</b> <span style="color:var(--muted);font-size:12px">(i 4 team)</span></label>
+   ${allowed.map(k=>`<label><input type="checkbox" class="etk" value="${k}" ${!crew&&(e.teams||[]).includes(k)?'checked':''} onchange="document.getElementById('etall').checked=false;collectEv();render()">${TEAMS[k].name}</label>`).join('')}</div></div>
+  <div class="f"><label style="display:flex;gap:8px;align-items:center;font-weight:600"><input type="checkbox" style="width:auto" ${modal.ppl?'checked':''} onchange="evTogglePpl(this.checked)">Persone dedicate <span style="font-weight:400;color:var(--muted)">(scegli singole persone o aggiungi un'email)</span></label>
+   ${modal.ppl?`<div class="pick" style="margin-top:8px">${others.map(u=>`<label><input type="checkbox" class="epu" value="${esc(u.id)}" ${(e.people||[]).includes(u.id)?'checked':''} ${u.email?'':'disabled'}>${esc(u.name)}${u.team?' · '+TEAMS[u.team].name:''} <span style="color:var(--muted);font-size:12px">${u.email?esc(u.email):'senza email'}</span></label>`).join('')||'<span style="color:var(--muted);font-size:13px;padding:6px 0;display:block">Nessun altro utente.</span>'}</div>
+   <div style="display:flex;gap:8px;margin-top:8px"><input id="eml" type="email" placeholder="Aggiungi un'email a mano" onkeydown="if(event.key==='Enter'){event.preventDefault();addEvMail()}"><button type="button" class="btn ghost sm" onclick="addEvMail()">Aggiungi</button></div>
+   ${(e.emails||[]).length?`<div style="display:flex;gap:6px;flex-wrap:wrap;margin-top:8px">${e.emails.map((m,i)=>`<span class="chip" style="background:var(--soft);color:var(--ink2)">${esc(m)} <a href="#" style="text-decoration:none;color:inherit" onclick="delEvMail(${i});return false" aria-label="Rimuovi">✕</a></span>`).join('')}</div>`:''}`:''}</div>
+  <div class="f"><label>Descrizione</label><textarea id="eds">${esc(e.desc)}</textarea></div>
+  </div>
+  ${e.id?`<div id="enotw" style="${dirty?'':'display:none'}"><label style="display:flex;gap:8px;align-items:flex-start;font-size:13px"><input type="checkbox" id="enot" style="width:auto;margin-top:3px" ${modal.notifyUpd?'checked':''}><span>Avvisa di nuovo le persone coinvolte dell'aggiornamento via email.</span></label></div>`:`<p style="font-size:12.5px;color:var(--muted);margin-top:6px">✉️ Creando l'evento, la email con titolo, data, orario, luogo${e.mode==='online'?', link della call':''} e descrizione parte in automatico a tutte le persone coinvolte. Tu ricevi un promemoria.${CLOUD?'':' (In modalità demo non parte nessuna email.)'}</p>`}
+  <div class="actions">${e.id&&mine?`<button class="x-btn" style="margin-right:auto" onclick="if(confirm('Eliminare l\\'evento?')){S.events=S.events.filter(x=>x.id!==${e.id});save();closeM()}">Elimina</button>`:''}<button class="btn ghost" onclick="${e.id?'modal.edit=false;modal.e={...modal.orig};render()':'closeM()'}">Annulla</button><button class="btn" onclick="saveEvent()">Salva</button></div>`)}
 
  if(modal.type==='cols'){const key=modal.key,sh=SHEETS[key],cols=colsOf(key),req=reqKeys(key),hid=S.sheet_cols.filter(c=>c.sheet===key&&c.kind==='hide');
   return mbg(`<h2>Colonne · ${esc(sh.t)}</h2>
@@ -1033,12 +1084,26 @@ async function delComment(i){if(!confirm('Eliminare questo commento?'))return;co
  const o=S.tasks.find(x=>x.id===modal.t.id),c=o.c[i];if(!c||!can.delC(c))return;
  if(CLOUD){const r=await sb.rpc('delete_comment',{tid:o.id,idx:i,old_txt:c.x});if(r.error)return alert(r.error.message)}
  o.c.splice(i,1);const lt=CLOUD&&last.tasks.find(x=>x.id===o.id);if(lt)lt.c=clone(o.c);modal.t.c=o.c;modal.editC=null;if(!CLOUD)save();render()}
-function openEvent(id,d){const e=id?{...S.events.find(x=>x.id===id)}:{t:'',d:d||iso(TODAY),h:'18:30',where:'',mode:'presenza',link:'',team:isSA()?null:me.team,desc:''};if(!id&&!can.event())return;modal={type:'event',e};render()}
+function openEvent(id,d){let e;
+ if(id){const o=S.events.find(x=>x.id===id);if(!o)return;e={...o,teams:[...(o.teams||[])],people:[...(o.people||[])],emails:[...(o.emails||[])]};
+  if(!e.teams.length)e.teams=e.team?[e.team]:[...ALLT];
+  modal={type:'event',e,orig:{...e,teams:[...e.teams],people:[...e.people],emails:[...e.emails]},edit:false,sig:evSig(e),ppl:!!(e.people.length||e.emails.length),notifyUpd:false}}
+ else{if(!can.event())return;const t=isSA()?[...ALLT]:[me.team].filter(Boolean);
+  e={t:'',d:d||iso(TODAY),h:'18:30',h2:'19:30',where:'',mode:'presenza',link:'',team:t.length===1?t[0]:null,teams:t,people:[],emails:[],desc:''};
+  modal={type:'event',e,edit:true,sig:null,ppl:false}}
+ render()}
 function saveEvent(){collectEv();const e=modal.e;e.t=(e.t||'').trim();if(!e.t)return alert('Inserisci un titolo');if(!e.d)return alert('Scegli la data');
+ if(!e.h)return alert('Inserisci l\'orario di inizio');if(!e.h2||e.h2<=e.h)return alert('L\'orario di fine deve essere dopo quello di inizio.');
  e.mode=e.mode==='online'?'online':'presenza';
  if(e.mode==='online'){e.link=(e.link||'').trim();if(!/^https?:\/\/\S+$/i.test(e.link))return alert('Evento online: inserisci il link della call (deve iniziare con https://).')}else e.link=null;
- const notify=modal.notify!==undefined?modal.notify:!e.id;
- if(e.id)S.events[S.events.findIndex(x=>x.id===e.id)]=e;else{e.id=nid(S.events);S.events.push(e)}save();closeM();if(notify)notifyEvent(e)}
+ e.teams=e.teams||[];e.people=modal.ppl?(e.people||[]):[];e.emails=modal.ppl?(e.emails||[]):[];
+ if(!e.teams.length&&!e.people.length&&!e.emails.length)return alert('Scegli almeno un team (o "Tutta la crew") oppure una persona.');
+ if(e.teams.length===ALLT.length)e.teams=[...ALLT];e.team=e.teams.length===1?e.teams[0]:null;
+ const isNew=!e.id;let notify=isNew,changes=[];
+ if(!isNew){const dirty=evSig(e)!==modal.sig;if(dirty){changes=evChanges(modal.orig,e);notify=!!modal.notifyUpd||confirm('Hai modificato l\'evento.\n\nVuoi avvisare nuovamente le persone dell\'aggiornamento via email?')}}
+ else e.by=me.id;
+ const {orig,...clean}=e;
+ if(e.id)S.events[S.events.findIndex(x=>x.id===e.id)]=clean;else{clean.id=nid(S.events);e.id=clean.id;S.events.push(clean)}save();closeM();if(notify)notifyEvent(clean,null,{update:!isNew,changes})}
 async function uploadFile(){const f=uf.files[0],l=ul.value.trim();if(!f&&!l)return alert('Seleziona un file o inserisci un link');
  let url=l||null;
  if(f&&CLOUD){if(f.size>50e6)return alert('Massimo 50 MB per file.');
@@ -1047,7 +1112,7 @@ async function uploadFile(){const f=uf.files[0],l=ul.value.trim();if(!f&&!l)retu
  S.files.unshift({id:nid(S.files),n:f?f.name:l.split('/').pop()||'Link',url,f:ufo.value,team:uv.value||null,by:me.id,d:iso(TODAY),sz:f?(f.size>1e6?(f.size/1e6).toFixed(1).replace('.',',')+' MB':Math.ceil(f.size/1e3)+' KB'):'link'});save();closeM()}
 function saveMeeting(){const t=mt.value.trim();if(!t)return alert('Inserisci un titolo');const teams=[...document.querySelectorAll('.mtm:checked')].map(i=>i.value);if(!teams.length)return alert('Scegli almeno un team');
  const mode=mmd.value==='online'?'online':'presenza',link=mode==='online'?mlk.value.trim():null;if(!md.value)return alert('Scegli la data');if(mode==='online'&&!/^https?:\/\/\S+$/i.test(link))return alert('Meeting online: inserisci il link della call (https://…).');
- const notify=mnot.checked,ev={id:nid(S.events),t,d:md.value,h:mh.value,where:mw.value,mode,link,team:teams.length===1?teams[0]:null,desc:'Meeting'};S.events.push(ev);
+ const notify=mnot.checked,ev={id:nid(S.events),t,d:md.value,h:mh.value,where:mw.value,mode,link,team:teams.length===1?teams[0]:null,teams:teams.length===ALLT.length?[...ALLT]:teams,people:[],emails:[],by:me.id,desc:'Meeting'};S.events.push(ev);
  const m={id:nid(S.meetings),t,ev:ev.id,teams,fixed:[],order:[]};S.meetings.push(m);selMeeting=m.id;save();closeM();if(notify)notifyEvent(ev,teams)}
 function addMember(){if(mu.value){const u=S.users.find(x=>x.id===mu.value);u.team=modal.team;if(u.role==='guest'&&isSA())u.role='member'}else if(mn.value.trim()&&me2.value.trim()){if(CLOUD)return invite(mn.value.trim(),me2.value.trim(),'member',modal.team);S.users.push({id:'u'+Date.now(),name:mn.value.trim(),ini:ini(mn.value),email:me2.value.trim(),role:'member',team:modal.team})}else return alert('Scegli un utente o inserisci nome ed email');save();closeM()}
 function removeFromTeam(id){const u=S.users.find(x=>x.id===id);if(confirm('Rimuovere '+u.name+' dal team?')){u.team=null;save();render()}}
@@ -1106,7 +1171,7 @@ Regole:
 - "team" è uno tra MK, OP, PA, SP (in genere il team dell'owner).
 - Date nel formato AAAA-MM-GG. "reason" è una frase breve che cita gli appunti.
 
-RIUNIONE: ${m.t}${e?' — '+e.d+' '+e.h:''}
+RIUNIONE: ${m.t}${e?' — '+e.d+' '+evRange(e):''}
 ORDINE DEL GIORNO:
 ${ag.map((p,i)=>`${i+1}. ${p.x}`).join('\n')||'(vuoto)'}
 
