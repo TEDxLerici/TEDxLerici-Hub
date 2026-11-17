@@ -8,6 +8,7 @@ Gli script SQL sono in `db/migrations/` e vanno eseguiti **una volta**, in ordin
 3. `003_aree_team_e_fogli.sql` — aree di lavoro dei team, fogli condivisi, accessi extra, tesoreria con password (cambiabile dal superadmin con `select public.tes_set_password('NuovaPassword');`)
 4. `004_colonne_fogli_e_eventi_online.sql` — colonne aggiunte/rimosse nei fogli, eventi in presenza/online con link della call
 5. `005_eventi_creatore_orari_persone.sql` — chi ha creato l'evento, orario di fine, team coinvolti, persone dedicate e email aggiunte a mano
+6. `006_sezioni_segnalazioni_task.sql` — sezioni aggiunte dai team (eliminabili solo dal superadmin), segnalazioni della pagina Debug, creatore delle task, data dell'evento principale
 
 Si possono rilanciare senza danni. Senza la 002 / 003 l'app funziona comunque, ma le nuove funzioni restano spente.
 
@@ -28,3 +29,12 @@ Su Vercel, *Project → Settings → Environment Variables* (poi *Redeploy*):
 | `MAIL_FROM` | mittente, es. `TEDxLerici HUB <hub@tuodominio.it>` (dominio verificato su Resend) |
 
 Senza queste variabili l'evento viene salvato normalmente e l'app avvisa che l'email non è configurata.
+
+## Novità di interfaccia (richiedono la migrazione 006)
+
+- **Fogli**: il `+` in fondo alle colonne aggiunge una colonna, la `×` sull'intestazione la toglie, la barra «+ Aggiungi riga» sotto la tabella aggiunge una riga e il cestino compare passando sulla riga (con «Annulla» per 7 secondi).
+- **Sezioni dei team**: «+ Nuova sezione» nelle schede del team crea un foglio nuovo (Voce, Stato, Responsabile, Scadenza, Note) che si può rinominare; solo il superadmin può eliminarlo.
+- **Task**: aprendo una task si vede la scheda; solo chi l'ha creata può modificarla (matita ✎), gli altri commentano. Le task vecchie senza creatore seguono le regole di prima.
+- **Debug**: tutti possono fare una segnalazione (titolo, categoria, dettagli); il superadmin scrive le note e con «✓ Ripristinata» la manda nell'Archivio.
+- **Panoramica**: la data del TEDx Main Event si cambia con la matita (team lead e superadmin).
+- La sezione File non è più nel menu (i dati restano nel database).

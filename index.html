@@ -99,7 +99,7 @@ h3{font-size:15px}
 .evl{position:absolute;top:0;bottom:0;border-left:2px dashed var(--red);z-index:2}
 .foot{display:flex;gap:20px;padding:12px 16px;font-size:11px;color:var(--muted);border-top:1px solid var(--line);flex-wrap:wrap;flex-shrink:0}
 .grid{display:grid;grid-template-columns:repeat(auto-fill,minmax(250px,1fr));gap:16px}
-.two{display:grid;grid-template-columns:1.4fr 1fr;gap:20px;align-items:start}
+.two{display:grid;grid-template-columns:minmax(0,1.4fr) minmax(0,1fr);gap:20px;align-items:start}.two>*{min-width:0}
 .li{display:flex;gap:10px;align-items:center;padding:10px 0;border-top:1px solid var(--line)}
 .li:first-child{border-top:none}
 .li small{color:var(--muted);display:block;font-size:11px}
@@ -162,7 +162,7 @@ td select{padding:6px 8px}
 .set-sec{margin-bottom:20px}.set-sec h3{margin-bottom:8px}
 .photo-row{display:flex;gap:14px;align-items:center;margin-bottom:14px}
 .mnav{display:none}
-@media(max-width:900px){aside{display:none}.two{grid-template-columns:1fr}.mhead{padding:14px 16px 0}.mbody{padding:14px 16px 24px}h1{font-size:23px}.ownc{display:none}.gantt{grid-template-columns:310px max-content}
+@media(max-width:900px){aside{display:none}.two{grid-template-columns:minmax(0,1fr)}.mhead{padding:14px 16px 0}.mbody{padding:14px 16px 24px}h1{font-size:23px}.ownc{display:none}.gantt{grid-template-columns:310px max-content}
 .mnav{display:flex;gap:6px;overflow-x:auto;padding:8px 12px;background:var(--card);border-bottom:1px solid var(--line);flex-shrink:0}
 .mnav button{padding:7px 12px;border-radius:20px;white-space:nowrap;font-weight:500;font-size:13px;border:1px solid var(--line);display:flex;gap:6px;align-items:center}
 .mnav button.on{background:var(--red-soft);color:var(--red);border-color:var(--red)}
@@ -181,6 +181,38 @@ table.sheet td input:focus,table.sheet td select:focus{outline:2px solid var(--r
 table.sheet tr:hover td{background:var(--hover)}
 .cwl{display:flex;align-items:center}.cwl a{padding:0 8px;color:var(--info-c);text-decoration:none;font-weight:700}
 .shcard:hover{box-shadow:0 4px 14px var(--shadow)}
+/* allineamenti e testi lunghi */
+.card>.pad>h3:first-child,.card.pad>h3:first-child{margin:0 0 8px;line-height:1.3}
+.row .tt{flex:1;min-width:0}.row .tt b,.row .tt small{display:block;overflow:hidden;text-overflow:ellipsis;white-space:nowrap}
+.li>div{min-width:0}.li b,.li small{overflow-wrap:anywhere}
+.shcard b,.shcard small{overflow-wrap:anywhere}
+.stats .s{white-space:nowrap}
+.head h1{min-width:0;overflow-wrap:anywhere}
+.tabs button{flex-shrink:0}
+/* fogli: + a scomparsa, sezioni, debug, toast */
+table.sheet th.ch{position:sticky;overflow:hidden;text-overflow:ellipsis}
+table.sheet th.ch .chl{display:block;overflow:hidden;text-overflow:ellipsis}
+.chx{position:absolute;right:3px;top:50%;transform:translateY(-50%);width:20px;height:20px;background:var(--head);border-radius:6px;color:var(--muted);font-size:15px;line-height:1;opacity:0;transition:opacity .12s}
+table.sheet th.ch:hover .chx,.chx:focus{opacity:1}.chx:hover{background:var(--red-soft);color:var(--red)}
+table.sheet th.cadd{padding:0;text-align:center;right:0;z-index:3;box-shadow:-1px 0 0 var(--line)}
+table.sheet tr:not(.addr) td:last-child{position:sticky;right:0;background:var(--card);box-shadow:-1px 0 0 var(--line)}
+table.sheet tr:not(.addr):hover td:last-child{background:var(--hover)}
+.addc{width:26px;height:26px;border-radius:8px;border:1px dashed var(--line);color:var(--muted);font-size:16px;line-height:1;opacity:.5;transition:all .12s}
+.addc:hover,table.sheet th.cadd:hover .addc{opacity:1;background:var(--red-soft);color:var(--red);border-color:var(--red)}
+.rdel{opacity:0;transition:opacity .12s}table.sheet tr:hover .rdel,.rdel:focus{opacity:1}
+@media(hover:none){.rdel,.chx{opacity:1}}
+table.sheet tr.addr td{border-right:none;border-bottom:none;text-align:left;padding:10px 14px;color:var(--muted);font-size:12.5px;cursor:pointer;opacity:.6;background:transparent}
+table.sheet tr.addr:hover td{opacity:1;background:var(--red-soft);color:var(--red)}
+.tabs .tabadd{margin-left:auto;color:var(--red);font-weight:600;flex-shrink:0}
+.shadd{display:flex;flex-direction:column;align-items:flex-start;justify-content:center;border:1px dashed var(--line);background:transparent;text-align:left;cursor:pointer;color:var(--ink)}
+.shadd:hover{border-color:var(--red);background:var(--red-soft);color:var(--red)}
+.icopick{width:38px;height:38px;border-radius:10px;border:1px solid var(--line);font-size:19px}.icopick.on{border-color:var(--red);background:var(--red-soft)}
+.kpi .kd{display:flex;align-items:center;gap:6px;font-size:12px;color:var(--muted);margin-top:6px;flex-wrap:wrap}
+table.rep{table-layout:auto;min-width:760px}table.rep td{vertical-align:top}table.rep .rpw{min-width:150px}table.rep .rpn{min-width:230px}table.rep .rpa{white-space:nowrap;text-align:right}
+.rpb{font-size:12.5px;color:var(--ink2);margin-top:4px;white-space:pre-line;word-break:break-word;line-height:1.5}
+table.rep textarea{min-height:56px;font-size:13px}
+#toast{position:fixed;left:50%;bottom:24px;transform:translateX(-50%);z-index:99999;background:var(--ink);color:var(--card);padding:11px 16px;border-radius:12px;display:flex;gap:14px;align-items:center;font-size:13px;box-shadow:0 8px 28px var(--shadow)}
+#toast button{color:#ff8a80;font-weight:700}
 </style>
 </head>
 <body>
@@ -261,11 +293,11 @@ sheet_rows:[
 };
 const CLOUD=!!(CFG.url&&CFG.key&&window.supabase);
 const sb=CLOUD?supabase.createClient(CFG.url,CFG.key):null;
-let S, last=null, loading=CLOUD, bootErr='', HAS_ASG=true, HAS_NUM=true, HAS_MIN=true, HAS_SUG=true, HAS_PROF=true, HAS_SHEETS=true, HAS_ACC=true, HAS_COLS=true, HAS_EVX=true, HAS_EVY=true;
-if(CLOUD)S={users:[],tasks:[],events:[],files:[],notes:[],meetings:[],folders:[],suggestions:[],sheet_rows:[],sheet_cols:[]};
+let S, last=null, loading=CLOUD, bootErr='', HAS_ASG=true, HAS_NUM=true, HAS_MIN=true, HAS_SUG=true, HAS_PROF=true, HAS_SHEETS=true, HAS_ACC=true, HAS_COLS=true, HAS_EVX=true, HAS_EVY=true, HAS_TBY=true, HAS_REP=true, HAS_DEF=true, HAS_SET=true;
+if(CLOUD)S={users:[],tasks:[],events:[],files:[],notes:[],meetings:[],folders:[],suggestions:[],sheet_rows:[],sheet_cols:[],reports:[],sheet_defs:[],settings:{}};
 else{try{S=JSON.parse(localStorage.getItem('tedxl2'))}catch(e){} if(!S||!S.meetings)S=JSON.parse(JSON.stringify(seed));}
 if(!S.suggestions)S.suggestions=[];
-if(!S.sheet_cols)S.sheet_cols=[];
+if(!S.sheet_cols)S.sheet_cols=[];if(!S.reports)S.reports=[];if(!S.sheet_defs)S.sheet_defs=[];if(!S.settings)S.settings={};
 if(!S.sheet_rows)S.sheet_rows=CLOUD?[]:JSON.parse(JSON.stringify(seed.sheet_rows));
 if(!CLOUD){let n=Math.max(0,...S.tasks.map(t=>t.num||0));[...S.tasks].sort((a,b)=>a.id-b.id).forEach(t=>{if(t.num==null)t.num=++n})}
 let rv=null, rm=null, minDraft={}, minTimer=null, theme='light';
@@ -281,14 +313,14 @@ const save=()=>{if(CLOUD){sync();return}try{localStorage.setItem('tedxl2',JSON.s
 const TABLES=['tasks','events','files','notes','meetings'];
 async function load(){
  const names=['profiles',...TABLES,'folders'];
- const res=await Promise.all([...names.map(n=>sb.from(n).select('*')),sb.from('suggestions').select('*'),sb.from('sheet_rows').select('*'),sb.from('sheet_cols').select('*'),sb.from('events').select('mode').limit(1),sb.from('events').select('by,h2,teams,people,emails').limit(1)]);
- const rey=res.pop(),rpr=res.pop(),rco=res.pop(),rsh=res.pop(),rs=res.pop();
+ const res=await Promise.all([...names.map(n=>sb.from(n).select('*')),sb.from('suggestions').select('*'),sb.from('sheet_rows').select('*'),sb.from('sheet_cols').select('*'),sb.from('events').select('mode').limit(1),sb.from('events').select('by,h2,teams,people,emails').limit(1),sb.from('tasks').select('by').limit(1),sb.from('reports').select('*'),sb.from('sheet_defs').select('*'),sb.from('hub_settings').select('*')]);
+ const rst=res.pop(),rdf=res.pop(),rrp=res.pop(),rtb=res.pop(),rey=res.pop(),rpr=res.pop(),rco=res.pop(),rsh=res.pop(),rs=res.pop();
  const err=res.find(r=>r.error);if(err)throw err.error;
  const [p,...rest]=res;S.users=p.data;
  TABLES.forEach((t,i)=>S[t]=rest[i].data);
  S.folders=rest[TABLES.length].data.map(x=>x.name).sort();
  HAS_SUG=!rs.error;S.suggestions=HAS_SUG?rs.data:[];
- HAS_COLS=!rco.error;S.sheet_cols=HAS_COLS?rco.data:[];S.sheet_cols.forEach(c=>c.o=c.o||[]);HAS_EVX=!rpr.error;HAS_EVY=!rey.error;S.events.forEach(e=>{e.teams=e.teams||[];e.people=e.people||[];e.emails=e.emails||[]});
+ HAS_COLS=!rco.error;S.sheet_cols=HAS_COLS?rco.data:[];S.sheet_cols.forEach(c=>c.o=c.o||[]);HAS_EVX=!rpr.error;HAS_EVY=!rey.error;HAS_TBY=!rtb.error;HAS_REP=!rrp.error;S.reports=HAS_REP?(rrp.data||[]):[];HAS_DEF=!rdf.error;S.sheet_defs=HAS_DEF?(rdf.data||[]):[];HAS_SET=!rst.error;S.settings={};if(HAS_SET)(rst.data||[]).forEach(x=>S.settings[x.k]=x.v);S.events.forEach(e=>{e.teams=e.teams||[];e.people=e.people||[];e.emails=e.emails||[]});
  HAS_SHEETS=!rsh.error;S.sheet_rows=HAS_SHEETS?rsh.data:[];
  tesOK=false;if(HAS_SHEETS){try{const t=await sb.rpc('tes_status');tesOK=t.data===true}catch(e){}}
  HAS_ASG=!S.tasks.length||'asg' in S.tasks[0];HAS_NUM=!S.tasks.length||'num' in S.tasks[0];
@@ -310,8 +342,8 @@ async function boot(){
 let syncing=Promise.resolve();
 function sync(){syncing=syncing.then(doSync);return syncing}
 async function doSync(){
- const errs=[];const strip=(t,o)=>{if(t==='tasks'){const {c,...r}=o;if(!HAS_ASG)delete r.asg;if(!HAS_NUM)delete r.num;return r}if(t==='events'){let r={...o};if(!HAS_EVX){delete r.mode;delete r.link}if(!HAS_EVY){delete r.by;delete r.h2;delete r.teams;delete r.people;delete r.emails}return r}if(t==='meetings'&&!HAS_MIN){const {minutes,...r}=o;return r}return o};
- for(const t of [...TABLES,...(HAS_SUG?['suggestions']:[]),...(HAS_SHEETS?['sheet_rows']:[]),...(HAS_COLS?['sheet_cols']:[])]){
+ const errs=[];const strip=(t,o)=>{if(t==='tasks'){const {c,...r}=o;if(!HAS_TBY)delete r.by;if(!HAS_ASG)delete r.asg;if(!HAS_NUM)delete r.num;return r}if(t==='events'){let r={...o};if(!HAS_EVX){delete r.mode;delete r.link}if(!HAS_EVY){delete r.by;delete r.h2;delete r.teams;delete r.people;delete r.emails}return r}if(t==='meetings'&&!HAS_MIN){const {minutes,...r}=o;return r}return o};
+ for(const t of [...TABLES,...(HAS_SUG?['suggestions']:[]),...(HAS_SHEETS?['sheet_rows']:[]),...(HAS_COLS?['sheet_cols']:[]),...(HAS_REP?['reports']:[]),...(HAS_DEF?['sheet_defs']:[])]){
   const old=new Map(last[t].map(o=>[o.id,JSON.stringify(strip(t,o))])),now=new Map(S[t].map(o=>[o.id,o]));
   const up=S[t].filter(o=>old.get(o.id)!==JSON.stringify(strip(t,o))).map(o=>strip(t,o));
   const del=[...old.keys()].filter(id=>!now.has(id));
@@ -402,19 +434,21 @@ function render(){
  const keep=rv===view&&!!qb,keepM=rm===modal&&!!qm;
  const sv={b:keep?qb.scrollTop:0,gx:keep&&qg?qg.scrollLeft:0,gy:keep&&qg?qg.scrollTop:0,m:keepM?qm.scrollTop:0};
  rv=view;rm=modal;
- const nav=[['overview','◫','Panoramica'],['timeline','☰','Timeline'],['tasks','✓','Task',inbox()],['calendar','▦','Calendario'],['files','🗀','File'],['meetings','◉','Meeting e OdG',pendSug()],['team','👥','Team']];
+ const nav=[['overview','◫','Panoramica'],['timeline','☰','Timeline'],['tasks','✓','Task',inbox()],['calendar','▦','Calendario'],['meetings','◉','Meeting e OdG',pendSug()],['team','👥','Team']];
  const navB=nav.filter(n=>me.role!=='guest'||!['tasks','meetings'].includes(n[0])).map(([k,i,l,b])=>`<button class="${view===k?'on':''}" onclick="go('${k}')"><span class="ic">${i}</span>${l}${b?`<span class="badge">${b}</span>`:''}</button>`).join('');
  const teamNavB=me.role==='guest'?'':Object.entries(TEAMS).filter(([k])=>teamAccess(k)).map(([k,T])=>`<button class="${view==='teamhub'&&curTeam===k?'on':''}" onclick="openTeam('${k}')"><span class="dot" style="background:${T.c};width:10px;height:10px;margin:0 4px"></span>${T.name}</button>`).join('');
+ const dbg=`<button class="${view==='debug'?'on':''}" onclick="go('debug')"><span class="ic">🐞</span>Debug${isSA()&&openReps()?`<span class="badge">${openReps()}</span>`:''}</button>`;
  const adm=can.access()?`<button class="${view==='admin'?'on':''}" onclick="go('admin')"><span class="ic">🛡</span>Utenti e permessi</button>`:'';
- const V={overview,timeline,tasks:tasksView,calendar:calView,files:filesView,meetings:meetView,team:teamView,teamhub:teamHubView,admin:adminView}[view];
+ applyDefs();if(view==='files')view='overview';
+ const V={overview,timeline,tasks:tasksView,calendar:calView,meetings:meetView,team:teamView,teamhub:teamHubView,admin:adminView,debug:debugView}[view];
  const out=V(),k=out.indexOf(BODY),top=k<0?'':out.slice(0,k),body=k<0?out:out.slice(k+BODY.length);
  R.innerHTML=`<div class="app"><aside>
  <div class="logo"><div class="x">X</div><div><b>TED<span>x</span>Lerici</b><small>HUB</small></div></div>
- <div class="nav">${navB}${teamNavB?`<div class="navsec">AREE TEAM</div>${teamNavB}`:''}${can.access()?`<div class="navsec">AMMINISTRAZIONE</div>${adm}`:''}</div>
+ <div class="nav">${navB}${teamNavB?`<div class="navsec">AREE TEAM</div>${teamNavB}`:''}<div class="navsec">${can.access()?'AMMINISTRAZIONE':'SUPPORTO'}</div>${adm}${dbg}</div>
  ${view==='timeline'?`<div class="sec"><span>FILTRA TEAM</span><span>${Object.values(filt).filter(Boolean).length}/4</span></div>
  <div class="tf">${Object.entries(TEAMS).map(([k,T])=>`<label><span class="dot" style="background:${T.c}"></span>${T.name}<span class="n">${S.users.filter(u=>u.team===k).length}</span><input type="checkbox" ${filt[k]?'checked':''} onchange="filt.${k}=this.checked?1:0;render()"></label>`).join('')}</div>`:''}
  <div class="user">${av(me,me.team)}<div class="meta"><b>${esc(me.name)}</b><div class="mr">${roleTag(me.role)}${me.team?`<small>${TEAMS[me.team].name}</small>`:''}</div></div><button title="Impostazioni" onclick="openSettings()">⚙</button><button title="Esci" onclick="logout()">⇥</button></div>
- </aside><main><div class="mnav">${navB}${teamNavB}${adm}<button onclick="openSettings()">⚙ Impostazioni</button><button onclick="logout()">⇥ Esci</button></div><div class="mhead">${top}</div><div class="mbody ${view==='timeline'?'fill':''}">${body}</div></main></div>${modal?modalView():''}`;
+ </aside><main><div class="mnav">${navB}${teamNavB}${adm}${dbg}<button onclick="openSettings()">⚙ Impostazioni</button><button onclick="logout()">⇥ Esci</button></div><div class="mhead">${top}</div><div class="mbody ${view==='timeline'?'fill':''}">${body}</div></main></div>${modal?modalView():''}`;
  const nb=document.querySelector('.mbody'),ng=document.querySelector('.gantt'),nm=document.querySelector('.mb');
  if(nb)nb.scrollTop=sv.b;if(ng){ng.scrollLeft=sv.gx;ng.scrollTop=sv.gy}if(nm)nm.scrollTop=sv.m;
 }
@@ -473,7 +507,7 @@ async function dl(id){const f=S.files.find(x=>x.id===id);if(!f.url)return alert(
 
 /* ---------- comuni ---------- */
 function stats(){const n=S.tasks.length,run=S.tasks.filter(t=>taskState(t).k==='run').length,t7=iso(new Date(TODAY.getTime()+7*864e5)),soon=S.tasks.filter(t=>t.e>=iso(TODAY)&&t.e<=t7).length;
- return `<div class="card stats"><div class="s"><b>${n}</b>Task totali</div><div class="s"><b>${run}</b>In corso</div><div class="s"><b>${soon}</b>In scadenza (7 giorni)</div><div class="ev" style="margin-left:auto">EVENTO<b>23 OTT 2027</b></div></div>`}
+ return `<div class="card stats"><div class="s"><b>${n}</b>Task totali</div><div class="s"><b>${run}</b>In corso</div><div class="s"><b>${soon}</b>In scadenza (7 giorni)</div><div class="ev" style="margin-left:auto">EVENTO<b>${mainDate().toLocaleDateString('it-IT',{day:'numeric',month:'short',year:'numeric'}).toUpperCase().replace(/\./g,'')}</b></div></div>`}
 const header=(crumb,title,btn='')=>`<div class="crumb">TEDxLerici HUB / ${crumb}</div><div class="head"><h1>${title}</h1><div style="display:flex;gap:8px">${btn}</div></div>`;
 const newTaskBtn=()=>can.create()?`<button class="btn" onclick="openTask()">+ Nuova task</button>`:'';
 function taskRow(t){const T=TEAMS[t.team],co=(t.asg||[]).filter(id=>S.users.some(u=>u.id===id));
@@ -487,12 +521,17 @@ function ganttRow(t){const T=TEAMS[t.team],co=(t.asg||[]).length,st=taskState(t)
  <div class="tt"><b title="${esc(t.t)}">${esc(t.t)}</b><small>${t.own?`<span class="ownp">${esc(U(t.own).name)}</span>${co?` +${co}`:''}`:'<span style="color:var(--warn-c);font-weight:600">Da assegnare</span>'} · ${fmt(t.s)} → ${fmt(t.e)} · ${days(t)} g</small></div>
  <span class="sd" title="${st.l}" style="background:${st.c}"></span>${delBtn(t)}</div>`}
 /* ---------- PANORAMICA ---------- */
-function overview(){const days=Math.ceil((EVENT-TODAY)/864e5);
+const mainDate=()=>{const v=(S.settings||{}).main_event;return v&&/^\d{4}-\d{2}-\d{2}$/.test(v)?new Date(v+'T00:00:00'):EVENT};
+function openMainEv(){if(!can.access())return;modal={type:'mainev',d:iso(mainDate())};render()}
+async function saveMainEv(){const v=(document.getElementById('mev')||{}).value;if(!v)return alert('Scegli la data.');if(!can.access())return;
+ if(CLOUD){if(!HAS_SET)return alert('Per salvare la data serve la migrazione SQL 006 (cartella db/migrations).');const r=await sb.from('hub_settings').upsert({k:'main_event',v});if(r.error)return alert(r.error.message)}
+ S.settings=S.settings||{};S.settings.main_event=v;if(!CLOUD)save();closeM()}
+function overview(){const days=Math.ceil((mainDate()-TODAY)/864e5);
  const up=S.events.filter(e=>e.d>=iso(TODAY)).sort((a,b)=>a.d.localeCompare(b.d)).slice(0,4);
  const mine=me.role==='guest'?[]:S.tasks.filter(t=>isMine(t)&&t.e>=iso(TODAY));
  const ib=S.tasks.filter(t=>!t.own&&(isSA()||isLead(t.team)));
  return header('Panoramica',`Ciao ${esc(me.name.split(' ')[0])}`,newTaskBtn())+stats()+BODY+`<div class="grid" style="margin-bottom:20px">
- <div class="card pad kpi"><small>Giorni all'evento</small><b>${days}</b></div>
+ <div class="card pad kpi"><small>Giorni all'evento</small><b>${days}</b><div class="kd">TEDx Main Event · ${mainDate().toLocaleDateString('it-IT',{day:'numeric',month:'long',year:'numeric'})}${can.access()?`<button class="ico" title="Modifica la data dell'evento" aria-label="Modifica la data dell'evento" onclick="openMainEv()">✎</button>`:''}</div></div>
  <div class="card pad kpi"><small>Le mie task aperte</small><b>${mine.length}</b></div>
  <div class="card pad kpi"><small>Prossimi eventi</small><b>${up.length}</b></div></div>
  <div class="two"><div>
@@ -523,7 +562,7 @@ function timeline(){
  <div class="seg"><button class="${scale==='w'?'on':''}" onclick="setScale('w')">Settimane</button><button class="${scale==='m'?'on':''}" onclick="setScale('m')">Mesi</button><button class="${scale==='q'?'on':''}" onclick="setScale('q')">Trimestri</button></div></div>
  <div class="gantt" data-today="${td>=0&&td<=total?Math.round(td):''}"><div class="gl"><div class="gh">ATTIVITÀ · OWNER · DURATA</div>${vis.map(ganttRow).join('')||'<div class="empty">Nessuna task.</div>'}</div>
  <div class="gr"><div style="width:${total}px"><div class="months">${cells.map(c=>`<div style="flex:0 0 ${c.w}px" title="${c.l}${c.sub?' · dal '+c.sub:''}"><span style="text-align:center;line-height:1.35">${c.w>=26?c.l:''}${c.sub&&c.w>=60?`<br><small style="letter-spacing:0;opacity:.8">${c.sub}</small>`:''}</span></div>`).join('')}</div>
- <div class="lanes"><div class="gridl">${cells.map(c=>`<i style="flex:0 0 ${c.w}px"></i>`).join('')}</div>${td>=0&&td<=total?`<div class="evl" style="left:${td}px;border-left:2px solid var(--info-c)" title="Oggi"></div>`:''}<div class="evl" style="left:${x(EVENT)}px"></div>${vis.map(t=>`<div class="lane">${bar(t)}</div>`).join('')}</div></div></div></div>
+ <div class="lanes"><div class="gridl">${cells.map(c=>`<i style="flex:0 0 ${c.w}px"></i>`).join('')}</div>${td>=0&&td<=total?`<div class="evl" style="left:${td}px;border-left:2px solid var(--info-c)" title="Oggi"></div>`:''}<div class="evl" style="left:${x(mainDate())}px"></div>${vis.map(t=>`<div class="lane">${bar(t)}</div>`).join('')}</div></div></div></div>
  <div class="foot"><span>▨ Barra a righe = richiesta da un altro team</span><span style="color:var(--info-c)">│ Oggi</span><span style="color:var(--red)">┆ Data evento</span><span>Settimane numerate secondo lo standard ISO (la settimana 1 inizia lunedì 4 gennaio)</span><span style="margin-left:auto">● stato: verde in corso · blu da iniziare · grigio terminata</span></div></div>`}
 
 /* ---------- TASK ---------- */
@@ -645,6 +684,22 @@ const SHEETS={
   cols:[{k:'n',l:'Articolo',w:210},{k:'cat',l:'Categoria',t:'sel',o:['Audio / video','Luci','Arredi','Allestimento','Merchandising','Cancelleria','Altro'],w:140},{k:'qta',l:'Quantità',t:'num',w:90},
    {k:'pos',l:'Posizione',w:170},{k:'st',l:'Stato',t:'sel',o:['Disponibile','In uso','In prestito','Da acquistare','Da riparare'],w:130},{k:'own',l:'Responsabile',t:'person',w:150},{k:'note',l:'Note',w:240}]}
 };
+const SEC_IC=['📄','📋','🗂','💡','🎯','🧾','📣','🛠','🎟','📝'];
+function applyDefs(){Object.keys(SHEETS).forEach(k=>{if(SHEETS[k].custom)delete SHEETS[k]});
+ (S.sheet_defs||[]).forEach(d=>{SHEETS['x'+d.id]={custom:d.id,team:d.team,ic:d.ic||'📄',t:d.title,desc:'Sezione creata dal team: aggiungi righe e colonne come ti serve.',
+  cols:[{k:'voce',l:'Voce',w:230},{k:'st',l:'Stato',t:'sel',o:['Da fare','In corso','Fatto'],w:120},{k:'own',l:'Responsabile',t:'person',w:150},{k:'d',l:'Scadenza',t:'date',w:130},{k:'note',l:'Note',w:260}]}})}
+function openSection(id,team){let d=null;if(id){d=S.sheet_defs.find(x=>x.id===id);if(!d||!teamAccess(d.team))return}else if(!teamAccess(team))return;
+ modal={type:'section',id:id||null,team:d?d.team:team,title:d?d.title:'',ic:d?(d.ic||'📄'):'📄'};render();setTimeout(()=>{const e=document.getElementById('sct');if(e)e.focus()})}
+function setSecIc(i){const e=document.getElementById('sct');if(e)modal.title=e.value;modal.ic=SEC_IC[i];render();setTimeout(()=>{const x=document.getElementById('sct');if(x){x.focus();x.setSelectionRange(99,99)}})}
+function saveSection(){const m=modal,el=document.getElementById('sct'),title=((el&&el.value)||'').trim().slice(0,80);if(!title)return alert('Scrivi il nome della sezione.');
+ if(!teamAccess(m.team))return;if(CLOUD&&!HAS_DEF)return alert('Per creare sezioni serve la migrazione SQL 006 (cartella db/migrations).');
+ const same=Object.keys(SHEETS).some(k=>SHEETS[k].team===m.team&&normH(SHEETS[k].t)===normH(title)&&SHEETS[k].custom!==m.id);if(same)return alert('Nel team esiste già una sezione con questo nome.');
+ if(m.id){mutRows(()=>{const d=S.sheet_defs.find(x=>x.id===m.id);if(d){d.title=title;d.ic=m.ic}});closeM();return}
+ const id=nid(S.sheet_defs),row={id,team:m.team,title,ic:m.ic,by:me.id};
+ mutRows(()=>{if(!S.sheet_defs.some(x=>x.id===id))S.sheet_defs.push(row)});teamTab='x'+id;closeM()}
+function deleteSection(id){if(!isSA())return;const d=S.sheet_defs.find(x=>x.id===id);if(!d)return;const key='x'+id,n=S.sheet_rows.filter(r=>r.sheet===key).length;
+ if(!confirm('Eliminare la sezione «'+d.title+'»'+(n?' e le sue '+n+' righe':'')+'?\nL\'operazione non si può annullare.'))return;
+ mutRows(()=>{S.sheet_defs=S.sheet_defs.filter(x=>x.id!==id);S.sheet_rows=S.sheet_rows.filter(r=>r.sheet!==key);S.sheet_cols=S.sheet_cols.filter(c=>c.sheet!==key)});teamTab='dash';render()}
 const TEAM_SHEETS=k=>Object.keys(SHEETS).filter(s=>SHEETS[s].team===k);
 const teamAccess=k=>me.role!=='guest'&&(isSA()||me.role==='lead'||me.team===k||(me.access||[]).includes(k));
 const canGrant=k=>isSA()||isLead(k);
@@ -680,7 +735,7 @@ function teamHubView(){
  if(teamTab!=='dash'&&!sh.includes(teamTab))teamTab='dash';
  const btn=(can.create()?`<button class="btn" onclick="openTask(null,'${k}')">+ Nuova task</button>`:'')+(canGrant(k)?`<button class="btn ghost" onclick="go('admin')">Gestisci accessi</button>`:'');
  const head=`<div class="crumb">TEDxLerici HUB / Aree team</div><div class="head"><h1><span class="dot" style="width:12px;height:12px;background:${T.c};display:inline-block;margin-right:10px"></span>Team ${T.name}</h1><div style="display:flex;gap:8px">${btn}</div></div>`;
- return head+stat+`<div class="tabs">${tabs.map(([id,l])=>`<button class="${teamTab===id?'on':''}" onclick="setTeamTab('${id}')">${l}</button>`).join('')}</div>`+BODY+(teamTab==='dash'?teamDash(k,open):sheetView(teamTab))}
+ return head+stat+`<div class="tabs">${tabs.map(([id,l])=>`<button class="${teamTab===id?'on':''}" onclick="setTeamTab('${id}')">${l}</button>`).join('')}<button class="tabadd" title="Aggiungi una sezione al team" onclick="openSection(null,'${k}')">+ Nuova sezione</button></div>`+BODY+(teamTab==='dash'?teamDash(k,open):sheetView(teamTab))}
 
 function teamDash(k,open){
  const T=TEAMS[k],list=[...open].sort((a,b)=>a.e.localeCompare(b.e)),sh=TEAM_SHEETS(k);
@@ -692,7 +747,7 @@ function teamDash(k,open){
    ${list.length>8?`<div style="padding:10px 18px;color:var(--muted);font-size:12px">… e altre ${list.length-8}. <button class="x-btn" style="color:var(--info-c)" onclick="taskTab='${isSA()?'all':'team'}';go('tasks')">Vedi tutte le task</button></div>`:''}</div>
   <div class="card pad"><h3>Lavoro da eseguire</h3><p style="color:var(--muted);font-size:12px;margin:3px 0 10px">I fogli del team: tutti i membri possono modificarli.</p>
    <div class="grid" style="grid-template-columns:repeat(auto-fill,minmax(220px,1fr));gap:12px">${sh.map(s=>{const d=SHEETS[s],n=(d.locked&&!tesOK)?null:S.sheet_rows.filter(r=>r.sheet===s).length;
-    return `<div class="card pad shcard" style="cursor:pointer;border-left:3px solid ${T.c}" onclick="setTeamTab('${s}')"><div style="font-size:22px">${d.ic}</div><b style="display:block;margin:6px 0 2px">${d.t}</b><small style="color:var(--muted)">${d.desc}</small><div style="margin-top:8px;font-size:12px;color:var(--ink2)">${n===null?'🔒 Richiede password':n+' '+(n===1?'riga':'righe')}</div></div>`}).join('')}</div></div>
+    return `<div class="card pad shcard" style="cursor:pointer;border-left:3px solid ${T.c}" onclick="setTeamTab('${s}')"><div style="font-size:22px">${d.ic}</div><b style="display:block;margin:6px 0 2px">${d.t}</b><small style="color:var(--muted)">${d.desc}</small><div style="margin-top:8px;font-size:12px;color:var(--ink2)">${n===null?'🔒 Richiede password':n+' '+(n===1?'riga':'righe')}</div></div>`}).join('')}<button class="card pad shadd" onclick="openSection(null,'${k}')"><span style="font-size:22px">＋</span><b style="display:block;margin-top:6px">Nuova sezione</b><small style="color:var(--muted)">Aggiungi un foglio al team</small></button></div></div>
   </div><div>
   <div class="card pad" style="margin-bottom:20px"><h3>Prossimi eventi</h3>${ev.map(e=>`<div class="li" style="cursor:pointer" onclick="openEvent(${e.id})"><div style="text-align:center;width:40px"><b style="font-size:18px">${new Date(e.d).getDate()}</b><small>${new Date(e.d).toLocaleDateString('it-IT',{month:'short'})}</small></div><div style="flex:1"><b>${esc(e.t)}</b><small>${evRange(e)} ${e.where?'· '+esc(e.where):''}</small></div></div>`).join('')||'<div class="empty">Nessun evento in arrivo.</div>'}</div>
   <div class="card pad"><h3>Persone</h3>${people.map(u=>`<div class="li">${av(u)}<div style="flex:1"><b>${esc(u.name)}</b><small>${ROLES[u.role].l}</small></div></div>`).join('')||'<div class="empty">Nessun membro nel team.</div>'}
@@ -714,9 +769,10 @@ function cellHtml(sh,c,r){const v=r.d[c.k]??'',on=`onchange="setCell(${r.id},'${
  if(t==='num'||t==='eur')return `<input type="number" step="any" inputmode="decimal" value="${esc(v)}" ${on}>`;
  if(t==='url')return `<div class="cwl"><input value="${esc(v)}" placeholder="https://" ${on}>${/^https?:\/\//i.test(v)?`<a href="${esc(v)}" target="_blank" rel="noopener" title="Apri">↗</a>`:''}</div>`;
  return `<input value="${esc(v)}" ${on}>`}
-function sheetTable(key,rows,gv){const sh={...SHEETS[key],cols:colsOf(key)};
- return `<div class="shwrap"><table class="sheet" style="width:${sh.cols.reduce((a,c)=>a+(c.w||140),76)}px"><colgroup><col style="width:36px">${sh.cols.map(c=>`<col style="width:${c.w||140}px">`).join('')}<col style="width:40px"></colgroup><thead><tr><th>#</th>${sh.cols.map(c=>`<th>${c.l}</th>`).join('')}<th></th></tr></thead><tbody>
- ${rows.map((r,i)=>`<tr><td class="rn">${i+1}</td>${sh.cols.map(c=>`<td>${cellHtml(sh,c,r)}</td>`).join('')}<td><button class="ico" title="Elimina riga" onclick="delRow(${r.id})">${trashSvg}</button></td></tr>`).join('')||`<tr><td colspan="${sh.cols.length+2}" class="empty" style="padding:18px">Nessuna riga.</td></tr>`}
+function sheetTable(key,rows,gv){const sh={...SHEETS[key],cols:colsOf(key)},req=reqKeys(key),N=sh.cols.length+2;
+ return `<div class="shwrap"><table class="sheet" style="width:${sh.cols.reduce((a,c)=>a+(c.w||140),76)}px"><colgroup><col style="width:36px">${sh.cols.map(c=>`<col style="width:${c.w||140}px">`).join('')}<col style="width:40px"></colgroup><thead><tr><th>#</th>${sh.cols.map(c=>`<th class="ch" title="${esc(c.l)}"><span class="chl">${esc(c.l)}</span>${req.has(c.k)?'':`<button class="chx" title="Rimuovi la colonna" aria-label="Rimuovi la colonna ${esc(c.l)}" onclick="removeCol('${key}','${c.k}')">×</button>`}</th>`).join('')}<th class="cadd"><button class="addc" title="Aggiungi una colonna" aria-label="Aggiungi una colonna" onclick="openNewCol('${key}')">+</button></th></tr></thead><tbody>
+ ${rows.map((r,i)=>`<tr><td class="rn">${i+1}</td>${sh.cols.map(c=>`<td>${cellHtml(sh,c,r)}</td>`).join('')}<td><button class="ico rdel" title="Elimina riga" aria-label="Elimina riga" onclick="delRow(${r.id})">${trashSvg}</button></td></tr>`).join('')||`<tr><td colspan="${N}" class="empty" style="padding:18px">Nessuna riga.</td></tr>`}
+ <tr class="addr" onclick="addRow('${key}','${esc(gv||'')}')"><td colspan="${N}">+ Aggiungi riga</td></tr>
  </tbody></table></div>`}
 function sheetView(key){const sh=SHEETS[key];if(!sh)return '';
  if(CLOUD&&!HAS_SHEETS)return `<div class="info">I fogli di lavoro richiedono la migrazione SQL 003: ${isSA()?'esegui il file <b>db/migrations/003_aree_team_e_fogli.sql</b> nel SQL Editor di Supabase.':'chiedi al superadmin di eseguirla.'}</div>`;
@@ -725,12 +781,12 @@ function sheetView(key){const sh=SHEETS[key];if(!sh)return '';
  const ql=shq.trim().toLowerCase(),all=sheetRows(key),match=r=>!ql||Object.entries(r.d).some(([k,v])=>{const c=colsOf(key).find(x=>x.k===k);const s=c&&c.t==='person'?U(v).name:v;return String(s??'').toLowerCase().includes(ql)});
  const tool=`<div style="padding:0 0 12px;display:flex;gap:8px;flex-wrap:wrap;align-items:center"><input id="shs" style="max-width:260px" placeholder="🔍 Cerca nel foglio…" value="${esc(shq)}" oninput="shq=this.value;render();setTimeout(()=>{const e=document.getElementById('shs');if(e){e.focus();e.setSelectionRange(99,99)}})">
   <span style="color:var(--muted);font-size:12px">${all.length} ${all.length===1?'riga':'righe'}</span><span style="flex:1"></span>
-  <button class="btn ghost sm" onclick="openCols('${key}')">▦ Colonne</button><input type="file" id="csvf" accept=".csv,.txt,text/csv" style="display:none" onchange="pickCsv(this,'${key}')"><button class="btn ghost sm" onclick="document.getElementById('csvf').click()">⬆ Importa CSV</button><button class="btn ghost sm" onclick="exportSheet('${key}')">⬇ Esporta (.csv)</button><button class="btn ghost sm" title="Scarica un CSV vuoto con le colonne del foglio" onclick="exportSheet('${key}',true)">Modello</button>${sh.locked?`<button class="btn ghost sm" onclick="lockTes()">🔒 Blocca</button>`:''}${sh.group?'':`<button class="btn sm" onclick="addRow('${key}')">+ Aggiungi riga</button>`}</div>`;
+  ${sh.custom?`<button class="btn ghost sm" onclick="openSection(${sh.custom})">✎ Rinomina</button>${isSA()?`<button class="btn ghost sm" style="color:var(--red)" onclick="deleteSection(${sh.custom})">Elimina sezione</button>`:''}`:''}<button class="btn ghost sm" onclick="openCols('${key}')">▦ Colonne</button><input type="file" id="csvf" accept=".csv,.txt,text/csv" style="display:none" onchange="pickCsv(this,'${key}')"><button class="btn ghost sm" onclick="document.getElementById('csvf').click()">⬆ Importa CSV</button><button class="btn ghost sm" onclick="exportSheet('${key}')">⬇ Esporta (.csv)</button><button class="btn ghost sm" title="Scarica un CSV vuoto con le colonne del foglio" onclick="exportSheet('${key}',true)">Modello</button>${sh.locked?`<button class="btn ghost sm" onclick="lockTes()">🔒 Blocca</button>`:''}${sh.group?'':`<button class="btn sm" onclick="addRow('${key}')">+ Aggiungi riga</button>`}</div>`;
  let body='';
  if(sh.tes)body=`<div class="grid" style="grid-template-columns:repeat(3,1fr);margin-bottom:14px"><div class="card pad kpi"><small>Entrate</small><b data-sum="${key}|in">${eur(sumOf(key).in)}</b></div><div class="card pad kpi"><small>Uscite</small><b data-sum="${key}|out">${eur(sumOf(key).out)}</b></div><div class="card pad kpi"><small>Saldo</small><b data-sum="${key}|bal">${eur(sumOf(key).bal)}</b></div></div>`+sheetTable(key,all.filter(match).sort((a,b)=>String(a.d.d||'9').localeCompare(String(b.d.d||'9'))));
  else if(sh.group){const g=sh.group,known=g.o,other=all.filter(r=>!known.includes(r.d[g.k]));
   body=[...known,...(other.length?['Altro']:[])].map(gv=>{const rs=(gv==='Altro'?other:all.filter(r=>r.d[g.k]===gv)).filter(match);
-   return `<div class="card pad" style="margin-bottom:16px"><div style="display:flex;align-items:center;gap:10px;margin-bottom:10px"><h3>${esc(gv)}</h3><span class="chip" style="background:var(--soft);color:var(--ink2)">${rs.length}</span><span style="color:var(--muted);font-size:12px">Totale <b data-sum="${key}|${esc(gv)}" style="color:var(--ink)">${eur(sumOf(key,gv))}</b></span><span style="flex:1"></span><button class="btn sm" onclick="addRow('${key}','${gv==='Altro'?'':gv}')">+ Aggiungi</button></div>${sheetTable(key,rs)}</div>`}).join('')}
+   return `<div class="card pad" style="margin-bottom:16px"><div style="display:flex;align-items:center;gap:10px;margin-bottom:10px"><h3>${esc(gv)}</h3><span class="chip" style="background:var(--soft);color:var(--ink2)">${rs.length}</span><span style="color:var(--muted);font-size:12px">Totale <b data-sum="${key}|${esc(gv)}" style="color:var(--ink)">${eur(sumOf(key,gv))}</b></span><span style="flex:1"></span><button class="btn sm" onclick="addRow('${key}','${gv==='Altro'?'':gv}')">+ Aggiungi</button></div>${sheetTable(key,rs,gv==='Altro'?'':gv)}</div>`}).join('')}
  else body=sheetTable(key,all.filter(match));
  return `<div class="sheetbox"><p style="color:var(--muted);font-size:13px;margin-bottom:12px">${sh.desc} Le modifiche si salvano da sole quando esci dal campo.</p>${tool}${body}</div>`}
 
@@ -740,8 +796,15 @@ function addRow(key,gv){const sh=SHEETS[key];if(!teamAccess(sh.team))return;cons
  if(sh.group&&gv)row.d[sh.group.k]=gv;if(sh.tes)row.d.d=iso(TODAY);if(key==='piano'||key==='insights')row.d.d=iso(TODAY);
  mutRows(()=>{if(!S.sheet_rows.some(x=>x.id===row.id))S.sheet_rows.push(row)});render();
  setTimeout(()=>{const tr=[...document.querySelectorAll('.sheet tbody tr')].pop(),i=tr&&tr.querySelector('td:nth-child(2) input,td:nth-child(2) select');if(i){if(tr.scrollIntoView)tr.scrollIntoView({block:'nearest'});i.focus()}})}
-function delRow(id){const r=S.sheet_rows.find(x=>x.id===id);if(!r||!teamAccess(r.team))return;if(!confirm('Eliminare questa riga?'))return;
- mutRows(()=>{S.sheet_rows=S.sheet_rows.filter(x=>x.id!==id)});render()}
+let undoRow=null,toastT=null;
+function toast(msg,act,fn){let t=document.getElementById('toast');if(!t){t=document.createElement('div');t.id='toast';document.body.appendChild(t)}
+ t.innerHTML='';const sp=document.createElement('span');sp.textContent=msg;t.appendChild(sp);
+ if(act){const b=document.createElement('button');b.textContent=act;b.onclick=()=>{t.remove();fn()};t.appendChild(b)}
+ clearTimeout(toastT);toastT=setTimeout(()=>{const x=document.getElementById('toast');if(x)x.remove();undoRow=null},7000)}
+function delRow(id){const r=S.sheet_rows.find(x=>x.id===id);if(!r||!teamAccess(r.team))return;
+ mutRows(()=>{S.sheet_rows=S.sheet_rows.filter(x=>x.id!==id)});undoRow=clone(r);render();toast('Riga eliminata','Annulla',undoDel)}
+function undoDel(){const r=undoRow;undoRow=null;if(!r||!teamAccess(r.team))return;mutRows(()=>{if(!S.sheet_rows.some(x=>x.id===r.id))S.sheet_rows.push(clone(r))});render()}
+function openNewCol(key){if(!teamAccess(SHEETS[key].team))return;modal={type:'newcol',key};render();setTimeout(()=>{const e=document.getElementById('ncn');if(e)e.focus()})}
 function setCell(id,k,raw){const r0=S.sheet_rows.find(x=>x.id===id);if(!r0||!teamAccess(r0.team))return;const sh=SHEETS[r0.sheet],c=colsOf(r0.sheet).find(x=>x.k===k);if(!c)return;
  const val=(c.t==='num'||c.t==='eur')?(raw===''||isNaN(Number(raw))?'':Number(raw)):raw;
  mutRows(()=>{const r=S.sheet_rows.find(x=>x.id===id);if(r)r.d={...r.d,[k]:val}});
@@ -759,6 +822,34 @@ function exportSheet(key,tpl){const sh={...SHEETS[key],cols:colsOf(key)},cell=(c
   v=String(v).replace(/"/g,'""');return /[;"\n\r]/.test(v)?`"${v}"`:v};
  const rows=tpl?[]:sheetRows(key),csv='﻿'+[sh.cols.map(c=>c.l).join(';'),...rows.map(r=>sh.cols.map(c=>cell(c,r)).join(';'))].join('\r\n');
  const a=document.createElement('a');a.href=URL.createObjectURL(new Blob([csv],{type:'text/csv;charset=utf-8'}));a.download=`${sh.t.replace(/[^\w]+/g,'_')}${tpl?'_modello':''}.csv`;document.body.appendChild(a);a.click();setTimeout(()=>{URL.revokeObjectURL(a.href);a.remove()},500)}
+
+/* ---- Debug: segnalazioni di tutti, risposte e archivio solo per il superadmin ---- */
+const REP_CAT={bug:['Bug di sistema','var(--red)','var(--red-soft)'],miglioria:['Miglioria','var(--info-c)','var(--info-bg)'],modifica:['Modifica di esistente','var(--warn-c)','var(--warn-bg)']};
+let repTab='open';
+const openReps=()=>(S.reports||[]).filter(r=>r.status!=='ripristinata').length;
+function debugView(){const all=S.reports||[],open=all.filter(r=>r.status!=='ripristinata'),arch=all.filter(r=>r.status==='ripristinata'),sa=isSA();
+ const list=(repTab==='arch'?arch:open).slice().sort((a,b)=>(repTab==='arch'?String(b.done_at||'').localeCompare(String(a.done_at||'')):0)||b.id-a.id);
+ const row=r=>{const c=REP_CAT[r.cat]||REP_CAT.bug,u=S.users.find(x=>x.id===r.by);
+  return `<tr><td class="rpw">${u?`<div style="display:flex;gap:8px;align-items:center">${av(u)}<div style="min-width:0"><b>${esc(u.name)}</b><small style="display:block;color:var(--muted)">${esc(fmtShort(r.created))}</small></div></div>`:`<span style="color:var(--muted)">Utente rimosso</span>`}</td>
+  <td><b style="word-break:break-word">${esc(r.title)}</b>${r.body?`<div class="rpb">${esc(r.body)}</div>`:''}</td>
+  <td><span class="chip" style="background:${c[2]};color:${c[1]}">${c[0]}</span></td>
+  <td class="rpn">${sa?`<textarea rows="2" placeholder="Note e commenti sul ripristino…" onchange="setRepNote(${r.id},this.value)">${esc(r.note||'')}</textarea>`:(r.note?`<div class="rpb" style="margin:0">${esc(r.note)}</div>`:'<span style="color:var(--muted)">—</span>')}
+   ${r.status==='ripristinata'?`<small style="color:var(--ok-c,#1b7f4b);display:block;margin-top:4px">✓ Ripristinata${r.done_at?' il '+esc(fmtShort(r.done_at)):''}${r.done_by&&S.users.find(x=>x.id===r.done_by)?' da '+esc(S.users.find(x=>x.id===r.done_by).name):''}</small>`:''}</td>
+  <td class="rpa">${sa?(r.status==='ripristinata'?`<button class="btn ghost sm" onclick="resolveReport(${r.id},false)">Riapri</button>`:`<button class="btn sm" onclick="resolveReport(${r.id},true)">✓ Ripristinata</button>`)+`<button class="ico" title="Elimina segnalazione" aria-label="Elimina segnalazione" onclick="delReport(${r.id})">${trashSvg}</button>`:''}</td></tr>`};
+ return header('Supporto','Debug',`<button class="btn" onclick="openReport()">+ Nuova segnalazione</button>`)+`<div class="tabs"><button class="${repTab==='open'?'on':''}" onclick="repTab='open';render()">Aperte <span class="chip" style="background:var(--soft);color:var(--ink2);margin-left:4px">${open.length}</span></button><button class="${repTab==='arch'?'on':''}" onclick="repTab='arch';render()">Archivio <span class="chip" style="background:var(--soft);color:var(--ink2);margin-left:4px">${arch.length}</span></button></div>`+BODY+
+ (CLOUD&&!HAS_REP?`<div class="info">Per usare le segnalazioni serve la migrazione SQL 006: ${isSA()?'esegui <b>db/migrations/006_sezioni_segnalazioni_task.sql</b> nel SQL Editor di Supabase.':'chiedi al superadmin di eseguirla.'}</div>`:
+ `<p style="color:var(--muted);font-size:13px;margin:0 0 12px">Qualcosa non va o vuoi proporre un miglioramento? Segnalalo qui: lo vedono tutti, il superadmin risponde e, quando è sistemato, lo manda in archivio.</p>
+ <div class="shwrap"><table class="rep"><thead><tr><th>Segnalata da</th><th>Titolo</th><th>Categoria</th><th>Note del superadmin</th><th></th></tr></thead><tbody>${list.map(row).join('')||`<tr><td colspan="5" class="empty" style="padding:22px">${repTab==='arch'?'Nessuna segnalazione in archivio.':'Nessuna segnalazione aperta.'}</td></tr>`}</tbody></table></div>`)}
+const fmtShort=d=>d?new Date(d+'T12:00:00').toLocaleDateString('it-IT',{day:'numeric',month:'short',year:'numeric'}):'';
+function openReport(){modal={type:'report',r:{title:'',cat:'bug',body:''}};render();setTimeout(()=>{const e=document.getElementById('rpt');if(e)e.focus()})}
+function saveReport(){const title=(document.getElementById('rpt').value||'').trim().slice(0,160),cat=document.getElementById('rpc').value,body=(document.getElementById('rpb').value||'').trim().slice(0,4000);
+ if(!title)return alert('Scrivi un titolo per la segnalazione.');if(!REP_CAT[cat])return;if(CLOUD&&!HAS_REP)return alert('Serve la migrazione SQL 006 (cartella db/migrations).');
+ S.reports.push({id:nid(S.reports),by:me.id,title,cat,body,status:'aperta',note:'',created:iso(TODAY),done_at:null,done_by:null});repTab='open';save();closeM()}
+function setRepNote(id,v){if(!isSA())return;const r=S.reports.find(x=>x.id===id);if(!r||r.note===v)return;r.note=v.slice(0,4000);save()}
+function resolveReport(id,on){if(!isSA())return;const r=S.reports.find(x=>x.id===id);if(!r)return;
+ const ta=document.querySelector('.rep textarea');
+ r.status=on?'ripristinata':'aperta';r.done_at=on?iso(TODAY):null;r.done_by=on?me.id:null;save();render();toast(on?'Segnalazione ripristinata e spostata in archivio':'Segnalazione riaperta')}
+function delReport(id){if(!isSA())return;const r=S.reports.find(x=>x.id===id);if(!r||!confirm('Eliminare la segnalazione «'+r.title+'»?'))return;S.reports=S.reports.filter(x=>x.id!==id);save();render()}
 
 /* ---- accessi alle aree team (Utenti e permessi) ---- */
 async function toggleAccess(uid,tm,on){
@@ -789,7 +880,7 @@ function addCol(key){const sh=SHEETS[key];if(!teamAccess(sh.team))return;
  const o=t==='sel'?[...new Set((document.getElementById('nco').value||'').split(',').map(x=>x.trim()).filter(Boolean))].slice(0,30):[];
  if(t==='sel'&&!o.length)return alert('Scrivi almeno un\'opzione per la tendina, separate da virgola.');
  const id=nid(S.sheet_cols),row={id,sheet:key,team:sh.team,kind:'add',k:'c'+id,l,t,o};
- mutRows(()=>{if(!S.sheet_cols.some(x=>x.id===id))S.sheet_cols.push(row)});render()}
+ mutRows(()=>{if(!S.sheet_cols.some(x=>x.id===id))S.sheet_cols.push(row)});if(modal&&modal.type==='newcol')modal=null;render()}
 function removeCol(key,k){const sh=SHEETS[key];if(!teamAccess(sh.team)||reqKeys(key).has(k))return;
  const col=colsOf(key).find(c=>c.k===k);if(!col)return;
  if(col.custom){if(!confirm('Rimuovere la colonna «'+col.l+'»? I suoi dati non saranno più visibili.'))return;const id=col.custom;mutRows(()=>{S.sheet_cols=S.sheet_cols.filter(x=>x.id!==id)});render();return}
@@ -915,15 +1006,16 @@ const mbg=(inner,cls='')=>{const a=inner.indexOf('</h2>'),b=inner.lastIndexOf('<
  return `<div class="modal-bg" onclick="if(event.target===this)closeM()"><div class="modal ${cls}"><div class="mh">${head}</div><div class="mb">${body}</div>${foot?`<div class="mf">${foot}</div>`:''}</div></div>`}
 function modalView(){
 
- if(modal.type==='task'){const t=modal.t,isNew=!t.id,ed=isNew||can.edit(t),asg=isNew?true:can.assign(t);
+ if(modal.type==='task'){const t=modal.t,isNew=!t.id,canEd=canEditTask(t),ed=isNew||(!!modal.edit&&canEd),asg=ed,crt=t.by&&S.users.find(u=>u.id===t.by);
   const ext=me.team&&t.team!==me.team&&isNew, others=S.users.filter(u=>u.role!=='guest'&&u.id!==t.own);
   /* owner: solo i membri del team che esegue la task */
   const owners=S.users.filter(u=>u.team===t.team&&u.role!=='guest');
   const ownList=owners.filter(u=>isNew&&me.role==='member'&&!isSA()?u.id===me.id:true);
   const outside=t.own&&!owners.some(u=>u.id===t.own)&&S.users.find(u=>u.id===t.own);
   const noOwn=!ext&&!owners.length;
-  return mbg(`<h2>${isNew?(modal.fromSug?'Nuova task dal suggerimento':'Nuova task'):`<span style="color:var(--muted)">${tnum(t)}</span> ${ed?'Modifica task':esc(t.t)}`}</h2>
-  ${!ed?`<div class="lock">🔒 Sola lettura: ${me.role==='guest'?'gli ospiti possono solo consultare.':'puoi modificare solo le task assegnate a te'+(me.role==='lead'?' o del tuo team':'')+'.'}</div>`:''}
+  return mbg(`<h2>${isNew?(modal.fromSug?'Nuova task dal suggerimento':'Nuova task'):`<span style="color:var(--muted)">${tnum(t)}</span> ${ed?'Modifica task':esc(t.t)}`}${!isNew&&!ed&&canEd?`<button class="btn ghost sm" style="float:right;margin-left:12px" title="Modifica task" aria-label="Modifica task" onclick="editTask()">✎</button>`:''}</h2>
+  ${!isNew&&!ed&&!canEd?`<div class="lock">🔒 ${me.role==='guest'?'Sola lettura: gli ospiti possono solo consultare.':`Solo ${crt?'<b>'+esc(crt.name)+'</b>, che ha creato la task,':'chi ha creato la task'} può modificarla. Tu puoi lasciare un commento.`}</div>`:''}
+  ${!isNew&&crt?`<p style="font-size:12px;color:var(--muted);margin:-4px 0 10px">Creata da <b>${esc(crt.name)}</b></p>`:''}
   ${modal.fromSug?`<div class="info">Suggerita dagli appunti della riunione: controlla i dati e premi «Crea task» per accettarla.</div>`:''}
   ${t.req&&!isNew?`<div class="info">Richiesta da <b>${TEAMS[t.req].name}</b> al team <b>${TEAMS[t.team].name}</b>.</div>`:''}
   <div class="f"><label>Titolo</label><input id="ft" value="${esc(t.t)}" ${ed?'':'disabled'}></div>
@@ -939,7 +1031,7 @@ function modalView(){
   ${can.comment()?`<div style="display:flex;gap:8px"><input id="fc" placeholder="Scrivi un commento..." value="${esc(modal.draft||'')}"><button class="btn ghost sm" onclick="addComment()">Invia</button></div>`:''}`:''}
   <div class="actions">${!isNew&&can.del(t)?`<button class="x-btn" style="margin-right:auto" onclick="delTask()">Elimina task</button>`:''}
   ${!isNew&&can.take(t)?`<button class="btn ghost" onclick="takeTask()">Prendi in carico</button>`:''}
-  <button class="btn ghost" onclick="closeM()">${ed||asg?'Annulla':'Chiudi'}</button>${ed||asg?`<button class="btn" onclick="saveTask()">${isNew&&ext?'Invia richiesta':isNew?'Crea task':'Salva'}</button>`:''}</div>`)}
+  <button class="btn ghost" onclick="${ed&&!isNew?'cancelTaskEdit()':'closeM()'}">${ed?'Annulla':'Chiudi'}</button>${ed?`<button class="btn" onclick="saveTask()">${isNew&&ext?'Invia richiesta':isNew?'Crea task':'Salva'}</button>`:''}</div>`)}
  if(modal.type==='event'){const e=modal.e,ed=!!modal.edit,mine=canEditEv(e),creator=e.by?(S.users.find(u=>u.id===e.by)||{}).name:'';
   const mt=S.meetings.find(m=>e.id&&m.ev===e.id),mtBtn=mt?`<button class="btn ghost sm" onclick="selMeeting=${mt.id};modal=null;go('meetings')">Vedi ordine del giorno →</button>`:'';
   const peopleL=(e.people||[]).map(id=>{const u=S.users.find(y=>y.id===id);return u?esc(u.name):''}).filter(Boolean).concat((e.emails||[]).map(esc));
@@ -975,6 +1067,31 @@ function modalView(){
   ${e.id?`<div id="enotw" style="${dirty?'':'display:none'}"><label style="display:flex;gap:8px;align-items:flex-start;font-size:13px"><input type="checkbox" id="enot" style="width:auto;margin-top:3px" ${modal.notifyUpd?'checked':''}><span>Avvisa di nuovo le persone coinvolte dell'aggiornamento via email.</span></label></div>`:`<p style="font-size:12.5px;color:var(--muted);margin-top:6px">✉️ Creando l'evento, la email con titolo, data, orario, luogo${e.mode==='online'?', link della call':''} e descrizione parte in automatico a tutte le persone coinvolte. Tu ricevi un promemoria.${CLOUD?'':' (In modalità demo non parte nessuna email.)'}</p>`}
   <div class="actions">${e.id&&mine?`<button class="x-btn" style="margin-right:auto" onclick="if(confirm('Eliminare l\\'evento?')){S.events=S.events.filter(x=>x.id!==${e.id});save();closeM()}">Elimina</button>`:''}<button class="btn ghost" onclick="${e.id?'modal.edit=false;modal.e={...modal.orig};render()':'closeM()'}">Annulla</button><button class="btn" onclick="saveEvent()">Salva</button></div>`)}
 
+
+ if(modal.type==='report'){return mbg(`<h2>Nuova segnalazione</h2>
+  <div class="f"><label>Titolo</label><input id="rpt" maxlength="160" placeholder="In breve, cosa non va o cosa vorresti"></div>
+  <div class="f"><label>Categoria</label><select id="rpc">${Object.entries(REP_CAT).map(([k,c])=>`<option value="${k}">${c[0]}</option>`).join('')}</select></div>
+  <div class="f"><label>Dettagli <span style="font-weight:400">(facoltativo)</span></label><textarea id="rpb" placeholder="Dove succede, cosa ti aspettavi, cosa è successo…"></textarea></div>
+  <p style="font-size:12.5px;color:var(--muted)">La segnalazione sarà visibile a tutta la crew con il tuo nome.</p>
+  <div class="actions"><button class="btn ghost" onclick="closeM()">Annulla</button><button class="btn" onclick="saveReport()">Invia segnalazione</button></div>`)}
+ if(modal.type==='newcol'){const key=modal.key,sh=SHEETS[key];
+  return mbg(`<h2>Nuova colonna · ${esc(sh.t)}</h2>
+  ${CLOUD&&!HAS_COLS?`<div class="info">Per aggiungere colonne serve la migrazione SQL 004 (cartella db/migrations).</div>`:''}
+  <div class="f"><label>Nome della colonna</label><input id="ncn" maxlength="60" placeholder="Es. Referente, Budget, Scadenza…" onkeydown="if(event.key==='Enter'){event.preventDefault();addCol('${key}')}"></div>
+  <div class="f"><label>Tipo di dato</label><select id="nct" onchange="document.getElementById('ncow').style.display=this.value==='sel'?'':'none'">${Object.entries(TYPE_L).map(([k,l])=>`<option value="${k}">${l}</option>`).join('')}</select></div>
+  <div id="ncow" class="f" style="display:none"><label>Opzioni della tendina</label><input id="nco" placeholder="Separate da virgola (es. Sì, No, Forse)"></div>
+  <div class="actions"><button class="btn ghost" onclick="closeM()">Annulla</button><button class="btn" onclick="addCol('${key}')">+ Aggiungi colonna</button></div>`)}
+ if(modal.type==='section'){const T=TEAMS[modal.team];
+  return mbg(`<h2>${modal.id?'Modifica sezione':'Nuova sezione'} · ${esc(T.name)}</h2>
+  ${CLOUD&&!HAS_DEF?`<div class="info">Per creare sezioni serve la migrazione SQL 006 (cartella db/migrations).</div>`:''}
+  <div class="f"><label>Nome della sezione</label><input id="sct" maxlength="80" value="${esc(modal.title)}" placeholder="Es. Logistica, Idee, Contatti…" onkeydown="if(event.key==='Enter'){event.preventDefault();saveSection()}"></div>
+  <div class="f"><label>Icona</label><div style="display:flex;gap:6px;flex-wrap:wrap">${SEC_IC.map((e,i)=>`<button type="button" class="icopick ${modal.ic===e?'on':''}" onclick="setSecIc(${i})">${e}</button>`).join('')}</div></div>
+  ${modal.id?'':`<p style="font-size:12.5px;color:var(--muted)">La sezione parte con le colonne Voce, Stato, Responsabile, Scadenza e Note: puoi aggiungerne o toglierne quando vuoi, e importare un CSV.</p>`}
+  <div class="actions"><button class="btn ghost" onclick="closeM()">Annulla</button><button class="btn" onclick="saveSection()">${modal.id?'Salva':'Crea sezione'}</button></div>`)}
+ if(modal.type==='mainev'){return mbg(`<h2>Data del TEDx Main Event</h2>
+  <div class="f"><label>Data</label><input type="date" id="mev" value="${esc(modal.d)}" onkeydown="if(event.key==='Enter')saveMainEv()"></div>
+  <p style="font-size:12.5px;color:var(--muted)">Serve per il conto alla rovescia in Panoramica e per la linea dell'evento nella Timeline. La vedono tutte le persone della crew.</p>
+  <div class="actions"><button class="btn ghost" onclick="closeM()">Annulla</button><button class="btn" onclick="saveMainEv()">Salva</button></div>`)}
  if(modal.type==='cols'){const key=modal.key,sh=SHEETS[key],cols=colsOf(key),req=reqKeys(key),hid=S.sheet_cols.filter(c=>c.sheet===key&&c.kind==='hide');
   return mbg(`<h2>Colonne · ${esc(sh.t)}</h2>
   ${CLOUD&&!HAS_COLS?`<div class="info">Per aggiungere o rimuovere colonne serve la migrazione SQL 004 (cartella db/migrations).</div>`:''}
@@ -1051,18 +1168,21 @@ function modalView(){
 /* ================= AZIONI ================= */
 function go(v){view=v;rv=null;q='';render()}
 function closeM(){modal=null;render()}
+const canEditTask=t=>!t.id||(HAS_TBY&&t.by?t.by===me.id:can.edit(t))||(!t.own&&can.assign(t));
 function openTask(id,team){if(!id&&!can.create())return;
  const t=id?JSON.parse(JSON.stringify(S.tasks.find(x=>x.id===id))):{t:'',team:team||me.team||'MK',req:null,own:me.role==='member'&&(!team||team===me.team)?me.id:null,s:iso(TODAY),e:iso(new Date(TODAY.getTime()+14*864e5)),p:0,dep:null,asg:[],c:[]};
- modal={type:'task',t};render()}
+ modal={type:'task',t,edit:!id};render()}
 function setTheme(t){if(modal&&modal.type==='settings')setsCollect();theme=t==='dark'?'dark':'light';try{localStorage.setItem('tedx_theme',theme)}catch(e){}document.documentElement.dataset.theme=theme;render()}
 function collect(){const t=modal.t,g=id=>document.getElementById(id);
  if(g('ft'))t.t=g('ft').value;if(g('fown'))t.own=g('fown').value||null;if(g('fs'))t.s=g('fs').value;if(g('fe'))t.e=g('fe').value;if(g('fdep'))t.dep=g('fdep').value?+g('fdep').value:null;if(g('fasgbox'))t.asg=[...document.querySelectorAll('.fasg:checked')].map(i=>i.value).filter(v=>v!==t.own);if(g('fc'))modal.draft=g('fc').value}
 function saveTask(){collect();const t=modal.t;if(!t.t.trim())return alert('Inserisci un titolo');if(t.e<t.s)return alert('La scadenza precede l\'inizio');
  if(!t.id&&me.team&&t.team!==me.team){t.req=me.team;t.own=null;t.asg=[]}
  if(!t.own&&(t.asg||[]).length)return alert('Scegli un owner prima di aggiungere altre persone.');
- if(!t.id){t.id=nid(S.tasks);if(!CLOUD)t.num=Math.max(0,...S.tasks.map(x=>x.num||0))+1;S.tasks.push(t);
+ if(!t.id){t.by=me.id;t.id=nid(S.tasks);if(!CLOUD)t.num=Math.max(0,...S.tasks.map(x=>x.num||0))+1;S.tasks.push(t);
   if(modal.fromSug){const g=S.suggestions.find(x=>x.id===modal.fromSug);if(g){g.status='accepted';g.task_id=t.id;g.decided_by=me.id}}}
  else S.tasks[S.tasks.findIndex(x=>x.id===t.id)]=t;save();closeM()}
+function editTask(){modal.edit=true;render()}
+function cancelTaskEdit(){const o=S.tasks.find(x=>x.id===modal.t.id);if(o)modal.t=clone(o);modal.edit=false;render()}
 function takeTask(){const o=S.tasks.find(x=>x.id===modal.t.id);o.own=me.id;o.asg=(o.asg||[]).filter(id=>id!==me.id);save();closeM()}
 function delTask(){delTaskById(modal.t.id,true)}
 function delTaskById(id,fromModal){const t=S.tasks.find(x=>x.id===id);if(!t||!can.del(t))return;
