@@ -370,12 +370,12 @@ const av=(u,team,cls='')=>{const T=TEAMS[team||u.team]||{c:'#777',bg:'#77777724'
  return ph?`<div class="av ${cls}" style="background:url('${u.photo}') center/cover;box-shadow:0 0 0 1.5px ${T.c}"></div>`:`<div class="av ${cls}" style="background:${T.bg};color:${T.c}">${esc(u.ini||ini(u.name||'?'))}</div>`};
 const roleTag=r=>`<span class="role" style="background:${ROLES[r].bg};color:${ROLES[r].c}">${ROLES[r].l}</span>`;
 const ALLT=Object.keys(TEAMS);
-const evTeams=e=>e.teams&&e.teams.length?e.teams:(e.team?[e.team]:ALLT);
+const evTeams=e=>e.teams&&e.teams.length?e.teams:((e.people&&e.people.length)||(e.emails&&e.emails.length)?[]:(e.team?[e.team]:ALLT));
 const evAll=e=>evTeams(e).length===ALLT.length;
 const evRange=e=>e.h2?e.h+'–'+e.h2:e.h;
 const canEditEv=e=>!e.id?can.event():(e.by?e.by===me.id:(HAS_EVY?isSA():can.event(e)));
 const validMail=m=>/^[^\s@]+@[^\s@]+\.[^\s@]+$/.test(String(m).trim());
-const teamsChips=e=>evAll(e)?teamChip(null):evTeams(e).map(teamChip).join(' ');
+const teamsChips=e=>evAll(e)?teamChip(null):evTeams(e).length?evTeams(e).map(teamChip).join(' '):'<span class="chip" style="background:var(--soft);color:var(--ink2)">Solo persone dedicate</span>';
 const teamChip=k=>k?`<span class="chip" style="background:${TEAMS[k].bg};color:${TEAMS[k].c}"><span class="dot" style="background:${TEAMS[k].c}"></span>${TEAMS[k].name}</span>`:`<span class="chip" style="background:var(--soft);color:var(--ink2)">Tutta la crew</span>`;
 const inbox=()=>S.tasks.filter(t=>!t.own&&(isSA()||isLead(t.team))).length;
 /* stato derivato dalle date (nessuna percentuale) */
@@ -1086,7 +1086,7 @@ async function delComment(i){if(!confirm('Eliminare questo commento?'))return;co
  o.c.splice(i,1);const lt=CLOUD&&last.tasks.find(x=>x.id===o.id);if(lt)lt.c=clone(o.c);modal.t.c=o.c;modal.editC=null;if(!CLOUD)save();render()}
 function openEvent(id,d){let e;
  if(id){const o=S.events.find(x=>x.id===id);if(!o)return;e={...o,teams:[...(o.teams||[])],people:[...(o.people||[])],emails:[...(o.emails||[])]};
-  if(!e.teams.length)e.teams=e.team?[e.team]:[...ALLT];
+  if(!e.teams.length&&!e.people.length&&!e.emails.length)e.teams=e.team?[e.team]:[...ALLT];
   modal={type:'event',e,orig:{...e,teams:[...e.teams],people:[...e.people],emails:[...e.emails]},edit:false,sig:evSig(e),ppl:!!(e.people.length||e.emails.length),notifyUpd:false}}
  else{if(!can.event())return;const t=isSA()?[...ALLT]:[me.team].filter(Boolean);
   e={t:'',d:d||iso(TODAY),h:'18:30',h2:'19:30',where:'',mode:'presenza',link:'',team:t.length===1?t[0]:null,teams:t,people:[],emails:[],desc:''};
