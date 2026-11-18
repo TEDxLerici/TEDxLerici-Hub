@@ -384,7 +384,11 @@ async function doSync(){
   const old=new Map(last[t].map(o=>[o.id,JSON.stringify(strip(t,o))])),now=new Map(S[t].map(o=>[o.id,o]));
   const up=S[t].filter(o=>old.get(o.id)!==JSON.stringify(strip(t,o))).map(o=>strip(t,o));
   const del=[...old.keys()].filter(id=>!now.has(id));
-  if(up.length){const r=await sb.from(t).upsert(up);if(r.error)errs.push(r.error.message)}
+  if(up.length&&t==='reports'){ /* righe già esistenti: UPDATE diretto (non passa dalla regola di inserimento), nuove: INSERT */
+   const nw=up.filter(o=>!old.has(o.id)),ex=up.filter(o=>old.has(o.id));
+   if(nw.length){const r=await sb.from(t).insert(nw);if(r.error)errs.push(r.error.message)}
+   for(const o of ex){const {id,...rest}=o;const r=await sb.from(t).update(rest).eq('id',id);if(r.error)errs.push(r.error.message)}}
+  else if(up.length){const r=await sb.from(t).upsert(up);if(r.error)errs.push(r.error.message)}
   if(del.length){const r=await sb.from(t).delete().in('id',del);if(r.error)errs.push(r.error.message)}
  }
  const nf=S.folders.filter(f=>!last.folders.includes(f));

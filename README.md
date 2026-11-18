@@ -9,7 +9,7 @@ Gli script SQL sono in `db/migrations/` e vanno eseguiti **una volta**, in ordin
 4. `004_colonne_fogli_e_eventi_online.sql` — colonne aggiunte/rimosse nei fogli, eventi in presenza/online con link della call
 5. `005_eventi_creatore_orari_persone.sql` — chi ha creato l'evento, orario di fine, team coinvolti, persone dedicate e email aggiunte a mano
 6. `006_sezioni_segnalazioni_task.sql` — sezioni aggiunte dai team (eliminabili solo dal superadmin), segnalazioni della pagina Debug, creatore delle task, data dell'evento principale
-7. `007_fix_segnalazioni_superadmin.sql` — correzione: il superadmin può completare/archiviare le segnalazioni del Debug (da eseguire dopo la 006)
+7. `007_fix_segnalazioni_superadmin.sql` — correzione: il superadmin può completare/archiviare le segnalazioni del Debug (da eseguire dopo la 006; con questa versione dell'app le segnalazioni funzionano anche prima di eseguirla)
 
 Si possono rilanciare senza danni. Senza la 002 / 003 l'app funziona comunque, ma le nuove funzioni restano spente.
 
