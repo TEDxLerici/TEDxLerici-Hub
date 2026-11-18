@@ -38,3 +38,9 @@ Senza queste variabili l'evento viene salvato normalmente e l'app avvisa che l'e
 - **Debug**: tutti possono fare una segnalazione (titolo, categoria, dettagli); il superadmin scrive le note e con «✓ Ripristinata» la manda nell'Archivio.
 - **Panoramica**: la data del TEDx Main Event si cambia con la matita (team lead e superadmin).
 - La sezione File non è più nel menu (i dati restano nel database).
+
+## Timeline e mobile
+
+- La **Timeline** va da oggi a dicembre 2028 (settimane, mesi o trimestri); il pulsante «Oggi» riporta all'inizio e le task già concluse si mostrano con la casella «Mostra anche le concluse».
+- Su telefono: timeline con colonna compatta, calendario a puntini con l'elenco degli eventi del mese, tabelle Utenti e Debug a schede, riepiloghi in griglia e campi a 16 px (niente zoom automatico su iPhone).
+
