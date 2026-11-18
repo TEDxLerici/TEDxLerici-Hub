@@ -9,6 +9,7 @@ Gli script SQL sono in `db/migrations/` e vanno eseguiti **una volta**, in ordin
 4. `004_colonne_fogli_e_eventi_online.sql` — colonne aggiunte/rimosse nei fogli, eventi in presenza/online con link della call
 5. `005_eventi_creatore_orari_persone.sql` — chi ha creato l'evento, orario di fine, team coinvolti, persone dedicate e email aggiunte a mano
 6. `006_sezioni_segnalazioni_task.sql` — sezioni aggiunte dai team (eliminabili solo dal superadmin), segnalazioni della pagina Debug, creatore delle task, data dell'evento principale
+7. `007_fix_segnalazioni_superadmin.sql` — correzione: il superadmin può completare/archiviare le segnalazioni del Debug (da eseguire dopo la 006)
 
 Si possono rilanciare senza danni. Senza la 002 / 003 l'app funziona comunque, ma le nuove funzioni restano spente.
 
@@ -35,7 +36,7 @@ Senza queste variabili l'evento viene salvato normalmente e l'app avvisa che l'e
 - **Fogli**: il `+` in fondo alle colonne aggiunge una colonna, la `×` sull'intestazione la toglie, la barra «+ Aggiungi riga» sotto la tabella aggiunge una riga e il cestino compare passando sulla riga (con «Annulla» per 7 secondi).
 - **Sezioni dei team**: «+ Nuova sezione» nelle schede del team crea un foglio nuovo (Voce, Stato, Responsabile, Scadenza, Note) che si può rinominare; solo il superadmin può eliminarlo.
 - **Task**: aprendo una task si vede la scheda; solo chi l'ha creata può modificarla (matita ✎), gli altri commentano. Le task vecchie senza creatore seguono le regole di prima.
-- **Debug**: tutti possono fare una segnalazione (titolo, categoria, dettagli); il superadmin scrive le note e con «✓ Ripristinata» la manda nell'Archivio.
+- **Debug**: tutti possono fare una segnalazione (titolo, categoria, dettagli); il superadmin scrive le note e con «✓ Completata» la segna in verde e la manda nell'Archivio.
 - **Panoramica**: la data del TEDx Main Event si cambia con la matita (team lead e superadmin).
 - La sezione File non è più nel menu (i dati restano nel database).
 

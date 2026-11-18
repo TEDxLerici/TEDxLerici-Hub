@@ -248,6 +248,8 @@ table.rep textarea{min-height:56px;font-size:13px}
  table.rep .rpw,table.rep .rpn{min-width:0}table.rep .rpa{text-align:left;display:flex;gap:8px;align-items:center}
 }
 .chip{align-self:center}
+table.rep tr.rdone td{background:rgba(34,163,95,.09)}table.rep tr.rdone td:first-child{box-shadow:inset 3px 0 0 #22a35f}
+.chip.rok{background:rgba(34,163,95,.16);color:#1f9d55;display:inline-flex;margin-top:6px;font-weight:600}
 </style>
 </head>
 <body>
@@ -874,15 +876,15 @@ const openReps=()=>(S.reports||[]).filter(r=>r.status!=='ripristinata').length;
 function debugView(){const all=S.reports||[],open=all.filter(r=>r.status!=='ripristinata'),arch=all.filter(r=>r.status==='ripristinata'),sa=isSA();
  const list=(repTab==='arch'?arch:open).slice().sort((a,b)=>(repTab==='arch'?String(b.done_at||'').localeCompare(String(a.done_at||'')):0)||b.id-a.id);
  const row=r=>{const c=REP_CAT[r.cat]||REP_CAT.bug,u=S.users.find(x=>x.id===r.by);
-  return `<tr><td class="rpw">${u?`<div style="display:flex;gap:8px;align-items:center">${av(u)}<div style="min-width:0"><b>${esc(u.name)}</b><small style="display:block;color:var(--muted)">${esc(fmtShort(r.created))}</small></div></div>`:`<span style="color:var(--muted)">Utente rimosso</span>`}</td>
+  return `<tr class="${r.status==='ripristinata'?'rdone':''}"><td class="rpw">${u?`<div style="display:flex;gap:8px;align-items:center">${av(u)}<div style="min-width:0"><b>${esc(u.name)}</b><small style="display:block;color:var(--muted)">${esc(fmtShort(r.created))}</small></div></div>`:`<span style="color:var(--muted)">Utente rimosso</span>`}</td>
   <td><b style="word-break:break-word">${esc(r.title)}</b>${r.body?`<div class="rpb">${esc(r.body)}</div>`:''}</td>
   <td data-l="Categoria"><span class="chip" style="background:${c[2]};color:${c[1]}">${c[0]}</span></td>
   <td class="rpn" data-l="Note del superadmin">${sa?`<textarea rows="2" placeholder="Note e commenti sul ripristino…" onchange="setRepNote(${r.id},this.value)">${esc(r.note||'')}</textarea>`:(r.note?`<div class="rpb" style="margin:0">${esc(r.note)}</div>`:'<span style="color:var(--muted)">—</span>')}
-   ${r.status==='ripristinata'?`<small style="color:var(--ok-c,#1b7f4b);display:block;margin-top:4px">✓ Ripristinata${r.done_at?' il '+esc(fmtShort(r.done_at)):''}${r.done_by&&S.users.find(x=>x.id===r.done_by)?' da '+esc(S.users.find(x=>x.id===r.done_by).name):''}</small>`:''}</td>
-  <td class="rpa">${sa?(r.status==='ripristinata'?`<button class="btn ghost sm" onclick="resolveReport(${r.id},false)">Riapri</button>`:`<button class="btn sm" onclick="resolveReport(${r.id},true)">✓ Ripristinata</button>`)+`<button class="ico" title="Elimina segnalazione" aria-label="Elimina segnalazione" onclick="delReport(${r.id})">${trashSvg}</button>`:''}</td></tr>`};
+   ${r.status==='ripristinata'?`<span class="chip rok">✓ Completata${r.done_at?' il '+esc(fmtShort(r.done_at)):''}${r.done_by&&S.users.find(x=>x.id===r.done_by)?' · '+esc(S.users.find(x=>x.id===r.done_by).name):''}</span>`:''}</td>
+  <td class="rpa">${sa?(r.status==='ripristinata'?`<button class="btn ghost sm" onclick="resolveReport(${r.id},false)">Riapri</button>`:`<button class="btn sm" onclick="resolveReport(${r.id},true)">✓ Completata</button>`)+`<button class="ico" title="Elimina segnalazione" aria-label="Elimina segnalazione" onclick="delReport(${r.id})">${trashSvg}</button>`:''}</td></tr>`};
  return header('Supporto','Debug',`<button class="btn" onclick="openReport()">+ Nuova segnalazione</button>`)+`<div class="tabs"><button class="${repTab==='open'?'on':''}" onclick="repTab='open';render()">Aperte <span class="chip" style="background:var(--soft);color:var(--ink2);margin-left:4px">${open.length}</span></button><button class="${repTab==='arch'?'on':''}" onclick="repTab='arch';render()">Archivio <span class="chip" style="background:var(--soft);color:var(--ink2);margin-left:4px">${arch.length}</span></button></div>`+BODY+
  (CLOUD&&!HAS_REP?`<div class="info">Per usare le segnalazioni serve la migrazione SQL 006: ${isSA()?'esegui <b>db/migrations/006_sezioni_segnalazioni_task.sql</b> nel SQL Editor di Supabase.':'chiedi al superadmin di eseguirla.'}</div>`:
- `<p style="color:var(--muted);font-size:13px;margin:0 0 12px">Qualcosa non va o vuoi proporre un miglioramento? Segnalalo qui: lo vedono tutti, il superadmin risponde e, quando è sistemato, lo manda in archivio.</p>
+ `<p style="color:var(--muted);font-size:13px;margin:0 0 12px">Qualcosa non va o vuoi proporre un miglioramento? Segnalalo qui: lo vedono tutti, il superadmin risponde e, quando è sistemato, lo segna come completato (in verde) e lo manda in archivio.</p>
  <div class="shwrap"><table class="rep"><thead><tr><th>Segnalata da</th><th>Titolo</th><th>Categoria</th><th>Note del superadmin</th><th></th></tr></thead><tbody>${list.map(row).join('')||`<tr><td colspan="5" class="empty" style="padding:22px">${repTab==='arch'?'Nessuna segnalazione in archivio.':'Nessuna segnalazione aperta.'}</td></tr>`}</tbody></table></div>`)}
 const fmtShort=d=>d?new Date(d+'T12:00:00').toLocaleDateString('it-IT',{day:'numeric',month:'short',year:'numeric'}):'';
 function openReport(){modal={type:'report',r:{title:'',cat:'bug',body:''}};render();setTimeout(()=>{const e=document.getElementById('rpt');if(e)e.focus()})}
@@ -892,7 +894,7 @@ function saveReport(){const title=(document.getElementById('rpt').value||'').tri
 function setRepNote(id,v){if(!isSA())return;const r=S.reports.find(x=>x.id===id);if(!r||r.note===v)return;r.note=v.slice(0,4000);save()}
 function resolveReport(id,on){if(!isSA())return;const r=S.reports.find(x=>x.id===id);if(!r)return;
  const ta=document.querySelector('.rep textarea');
- r.status=on?'ripristinata':'aperta';r.done_at=on?iso(TODAY):null;r.done_by=on?me.id:null;save();render();toast(on?'Segnalazione ripristinata e spostata in archivio':'Segnalazione riaperta')}
+ r.status=on?'ripristinata':'aperta';r.done_at=on?iso(TODAY):null;r.done_by=on?me.id:null;save();render();toast(on?'Segnalazione completata e spostata in archivio':'Segnalazione riaperta')}
 function delReport(id){if(!isSA())return;const r=S.reports.find(x=>x.id===id);if(!r||!confirm('Eliminare la segnalazione «'+r.title+'»?'))return;S.reports=S.reports.filter(x=>x.id!==id);save();render()}
 
 /* ---- accessi alle aree team (Utenti e permessi) ---- */
