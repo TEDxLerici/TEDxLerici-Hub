@@ -45,3 +45,11 @@ Senza queste variabili l'evento viene salvato normalmente e l'app avvisa che l'e
 - La **Timeline** va da oggi a dicembre 2028 (settimane, mesi o trimestri); il pulsante «Oggi» riporta all'inizio e le task già concluse si mostrano con la casella «Mostra anche le concluse».
 - Su telefono: timeline con colonna compatta, calendario a puntini con l'elenco degli eventi del mese, tabelle Utenti e Debug a schede, riepiloghi in griglia e campi a 16 px (niente zoom automatico su iPhone).
 
+
+
+## Mobile (≤700 px) e Panoramica
+
+- Barra di navigazione in basso a pillola (Home, Team, Timeline, Calendario, Altro): solo la voce attiva mostra l'etichetta. "Altro" apre un foglio con Task, Meeting, aree team, Utenti e permessi, Debug, Impostazioni, Esci.
+- Stile pulito chiaro/scuro: un solo pulsante primario per schermata (nero in chiaro, bianco in scuro), gli altri sono bordati; l'effetto vetro è solo sulla barra.
+- Panoramica: in alto la riga del **TEDx Main Event** con la data (matita solo per il superadmin), sotto la card **"Il tuo prossimo evento"**: il primo evento futuro in cui sei coinvolto (persona dedicata, tuo team, tutta la crew, oppure creato da te); dietro la card spunta quello successivo.
+- Migrazione **008** (`db/migrations/008_data_evento_solo_superadmin.sql`): la data dell'evento main è modificabile in database solo dal superadmin (richiede la 006). L'app funziona anche senza.
