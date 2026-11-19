@@ -384,6 +384,11 @@ async function doSync(){
   const old=new Map(last[t].map(o=>[o.id,JSON.stringify(strip(t,o))])),now=new Map(S[t].map(o=>[o.id,o]));
   const up=S[t].filter(o=>old.get(o.id)!==JSON.stringify(strip(t,o))).map(o=>strip(t,o));
   const del=[...old.keys()].filter(id=>!now.has(id));
+  if(t==='reports'){ /* righe nuove = insert, righe esistenti = update: con l'upsert Postgres applica anche la regola di inserimento */
+   const ex=new Set(last[t].map(o=>o.id)),ins=up.filter(o=>!ex.has(o.id));
+   if(ins.length){const r=await sb.from(t).insert(ins);if(r.error)errs.push(r.error.message)}
+   for(const o of up.filter(o=>ex.has(o.id))){const {id,...rest}=o;const r=await sb.from(t).update(rest).eq('id',id).select('id');if(r.error)errs.push(r.error.message);else if(!(r.data||[]).length)errs.push('Segnalazione non aggiornata: solo il superadmin può modificarla.')}
+  }else
   if(up.length){const r=await sb.from(t).upsert(up);if(r.error)errs.push(r.error.message)}
   if(del.length){const r=await sb.from(t).delete().in('id',del);if(r.error)errs.push(r.error.message)}
  }
@@ -397,7 +402,7 @@ async function doSync(){
  if(gone.length){const r=await sb.from('profiles').delete().in('id',gone);if(r.error)errs.push(r.error.message)}
  try{await load()}catch(e){errs.push(e.message)}
  if(me)me=S.users.find(u=>u.id===me.id)||me;
- if(errs.length)alert('Alcune modifiche non sono state salvate (permessi insufficienti o errore):\n'+errs.join('\n'));
+ if(errs.length)alert('Alcune modifiche non sono state salvate (permessi insufficienti o errore):\n'+errs.join('\n')+(errs.some(e=>/row-level security/i.test(e)&&/reports/.test(e))?'\n\nSe sei superadmin: esegui la migrazione 007 (db/migrations) nel SQL Editor di Supabase.':''));
  if(!modal&&!(document.activeElement&&(document.activeElement.id==='mmin'||document.activeElement.closest('.sheetbox'))))render();
 }
 if(CLOUD){sb.auth.onAuthStateChange(ev=>{
