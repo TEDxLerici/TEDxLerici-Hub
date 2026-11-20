@@ -53,3 +53,9 @@ Senza queste variabili l'evento viene salvato normalmente e l'app avvisa che l'e
 - Stile pulito chiaro/scuro: un solo pulsante primario per schermata (nero in chiaro, bianco in scuro), gli altri sono bordati; l'effetto vetro è solo sulla barra.
 - Panoramica: in alto la riga del **TEDx Main Event** con la data (matita solo per il superadmin), sotto la card **"Il tuo prossimo evento"**: il primo evento futuro in cui sei coinvolto (persona dedicata, tuo team, tutta la crew, oppure creato da te); dietro la card spunta quello successivo.
 - Migrazione **008** (`db/migrations/008_data_evento_solo_superadmin.sql`): la data dell'evento main è modificabile in database solo dal superadmin (richiede la 006). L'app funziona anche senza.
+
+### Mobile: ritocchi
+- Evento e task si aprono sempre come **scheda di sola lettura**; la matita (creatore) apre la **schermata di modifica a tutto schermo**.
+- Timeline su mobile senza legenda in fondo.
+- Vista orizzontale: stesso layout mobile (barra compatta al centro, niente sidebar) anche oltre 900 px di larghezza.
+- Area dello stato/notch: sfondo continuo sotto l'orologio (safe-area) e `theme-color` che segue il tema chiaro/scuro.

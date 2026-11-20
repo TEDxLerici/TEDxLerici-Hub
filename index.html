@@ -3,6 +3,7 @@
 <head>
 <meta charset="UTF-8">
 <meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover">
+<meta name="theme-color" content="#dde6f3">
 <title>TEDxLerici HUB</title>
 <link href="https://fonts.googleapis.com/css2?family=DM+Sans:wght@400;500;600;700&display=swap" rel="stylesheet">
 <script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2"></script>
@@ -251,6 +252,7 @@ table.rep textarea{min-height:56px;font-size:13px}
 table.rep tr.rdone td{background:rgba(34,163,95,.09)}table.rep tr.rdone td:first-child{box-shadow:inset 3px 0 0 #22a35f}
 .chip.rok{background:rgba(34,163,95,.16);color:#1f9d55;display:inline-flex;margin-top:6px;font-weight:600}
 
+@media(max-height:500px) and (orientation:landscape) and (min-width:901px){aside{display:none}.two{grid-template-columns:minmax(0,1fr)}.mhead{padding:14px 16px 0}.mbody{padding:14px 16px 24px}}
 /* ---- Panoramica: evento main + prossimo evento per me ---- */
 .mainrow{display:flex;align-items:center;gap:12px;padding:8px 10px 8px 18px;margin-bottom:14px;min-height:52px}
 .mainrow .mi{color:var(--red);font-size:18px;flex:none}.mainrow .mt{font-weight:700;white-space:nowrap}
@@ -263,12 +265,14 @@ table.rep tr.rdone td{background:rgba(34,163,95,.09)}table.rep tr.rdone td:first
 .nxt .na{display:flex;align-items:center;gap:14px;margin-top:14px;flex-wrap:wrap}.nxt .nw{color:var(--muted);font-size:12.5px;font-weight:600}
 .mtab,.msbg{display:none}
 /* ---- Mobile: stile pulito (barra in basso, un solo pulsante primario, vetro solo sulla barra) ---- */
-@media(max-width:700px){
+@media(max-width:700px),(max-height:500px) and (orientation:landscape){
  :root{--pri:#111114;--prit:#fff;--line2:rgba(20,20,40,.09);--peek:#cfd9ea}
  html[data-theme=dark]{--pri:#f5f5f7;--prit:#111114;--line2:rgba(255,255,255,.1);--peek:#24252e}
- body{background:linear-gradient(180deg,#dde6f3 0,#eaedf5 36%,#f6f4f6 100%) fixed}
- html[data-theme=dark] body{background:linear-gradient(180deg,#171a24 0,#0f1015 40%,#0a0a0d 100%) fixed}
- .mhead{background:transparent;border-bottom:0;padding:calc(14px + env(safe-area-inset-top)) 16px 0}
+ html{background:linear-gradient(180deg,#dde6f3 0,#eaedf5 36%,#f6f4f6 100%) fixed #f6f4f6}
+ html[data-theme=dark]{background:linear-gradient(180deg,#171a24 0,#0f1015 40%,#0a0a0d 100%) fixed #0a0a0d}
+ body{background:transparent}
+ .app{box-sizing:border-box;padding:env(safe-area-inset-top) env(safe-area-inset-right) 0 env(safe-area-inset-left)}
+ .mhead{background:transparent;border-bottom:0;padding:14px 16px 0}
  .mnav,.crumb{display:none}
  .head h1{font-size:30px;font-weight:800;letter-spacing:-.02em}
  .mbody{padding:12px 16px calc(112px + env(safe-area-inset-bottom))}.mbody.fill{padding-bottom:calc(100px + env(safe-area-inset-bottom))}
@@ -295,6 +299,23 @@ table.rep tr.rdone td{background:rgba(34,163,95,.09)}table.rep tr.rdone td:first
  #root[data-view=overview] .head .btn,.btn.sm{background:transparent;color:var(--ink);border:1px solid var(--line2)}
  .mst .ic{width:24px;display:inline-flex;justify-content:center;flex:none}
  .modal-bg{place-items:end center}.modal,.modal.wide{width:100%;border-radius:28px 28px 0 0;max-height:92dvh}
+ .modal.medit{height:100dvh;max-height:100dvh;border-radius:0}
+ .modal.medit .mh{padding-top:calc(16px + env(safe-area-inset-top))}.modal.medit .mf{padding-bottom:calc(14px + env(safe-area-inset-bottom))}
+ .modal.medit .mb{padding-left:max(26px,env(safe-area-inset-left));padding-right:max(26px,env(safe-area-inset-right))}
+ /* timeline: niente legenda, barra attrezzi compatta */
+ .tlfoot{display:none}
+ #root[data-view=timeline] .tools input{flex:1 1 120px}
+ #root[data-view=timeline] .head{margin:0 0 8px}
+}
+@media(max-height:500px) and (orientation:landscape){
+ .mtab{left:50%;right:auto;transform:translateX(-50%);width:min(520px,calc(100% - 32px));height:52px;bottom:calc(8px + env(safe-area-inset-bottom));padding:6px;border-radius:26px}
+ .mtab button{height:40px;border-radius:20px}.mtab button.on{padding:0 14px}
+ .mbody,.mbody.fill{padding-bottom:calc(76px + env(safe-area-inset-bottom))}
+ .head h1{font-size:24px}.crumb{display:none}
+ .msbg{justify-content:center}.mst{max-width:560px;border-radius:24px 24px 0 0}
+ .modal,.modal.wide{max-width:640px;max-height:96dvh}.modal.medit{max-width:none}
+ .mainrow{margin-bottom:10px}.nxw{margin-bottom:10px}
+ #root[data-view=timeline] .stats,#root[data-view=overview] .stats{display:none}
 }
 </style>
 </head>
@@ -386,6 +407,7 @@ if(!CLOUD){let n=Math.max(0,...S.tasks.map(t=>t.num||0));[...S.tasks].sort((a,b)
 let rv=null, rm=null, minDraft={}, minTimer=null, theme='light';
 try{theme=localStorage.getItem('tedx_theme')==='dark'?'dark':'light'}catch(e){}
 document.documentElement.dataset.theme=theme;
+const themeColor=()=>{const m=document.querySelector('meta[name=theme-color]');if(m)m.content=theme==='dark'?'#171a24':'#dde6f3'};themeColor();
 const BODY='<!--B-->';
 let me=null, view='overview', filt={MK:1,OP:1,PA:1,SP:1}, q='', modal=null, moreOpen=false, scale='m', auth={step:1}, calM=new Date(TODAY.getFullYear(),TODAY.getMonth(),1), folder='Tutti', taskTab='mine', selMeeting=null;
 if(!CLOUD)try{const id=sessionStorage.getItem('tedxl2_me');me=S.users.find(u=>u.id===id)||null}catch(e){}
@@ -681,7 +703,7 @@ function timeline(){
  <div class="gantt" data-today="${td>=0&&td<=total?Math.round(td):''}"><div class="gl"><div class="gh">ATTIVITÀ<span class="gh2">&nbsp;· OWNER · DURATA</span></div>${vis.map(ganttRow).join('')||'<div class="empty">Nessuna task.</div>'}</div>
  <div class="gr"><div style="width:${total}px"><div class="months">${cells.map(c=>`<div style="flex:0 0 ${c.w}px" title="${c.l}${c.sub?' · dal '+c.sub:''}"><span style="text-align:center;line-height:1.35">${c.w>=26?c.l:''}${c.sub&&c.w>=60?`<br><small style="letter-spacing:0;opacity:.8">${c.sub}</small>`:''}</span></div>`).join('')}</div>
  <div class="lanes"><div class="gridl">${cells.map(c=>`<i style="flex:0 0 ${c.w}px"></i>`).join('')}</div>${td>=0&&td<=total?`<div class="evl" style="left:${td}px;border-left:2px solid var(--info-c)" title="Oggi"></div>`:''}<div class="evl" style="left:${x(mainDate())}px"></div>${vis.map(t=>`<div class="lane">${bar(t)}</div>`).join('')}</div></div></div></div>
- <div class="foot"><span>▨ Barra a righe = richiesta da un altro team</span><span style="color:var(--info-c)">│ Oggi</span><span style="color:var(--red)">┆ Data evento</span><span>Da oggi a dicembre 2028 · settimane numerate secondo lo standard ISO</span><span style="margin-left:auto">● stato: verde in corso · blu da iniziare · grigio terminata</span></div></div>`}
+ <div class="foot tlfoot"><span>▨ Barra a righe = richiesta da un altro team</span><span style="color:var(--info-c)">│ Oggi</span><span style="color:var(--red)">┆ Data evento</span><span>Da oggi a dicembre 2028 · settimane numerate secondo lo standard ISO</span><span style="margin-left:auto">● stato: verde in corso · blu da iniziare · grigio terminata</span></div></div>`}
 
 /* ---------- TASK ---------- */
 function tasksView(){
@@ -1124,7 +1146,10 @@ function delEvMail(i){collectEv();modal.e.emails.splice(i,1);render()}
 const mbg=(inner,cls='')=>{const a=inner.indexOf('</h2>'),b=inner.lastIndexOf('<div class="actions"');
  const head=a>=0?inner.slice(0,a+5):'',body=a>=0?inner.slice(a+5,b>a?b:undefined):(b>=0?inner.slice(0,b):inner),foot=b>=0&&b>a?inner.slice(b):'';
  return `<div class="modal-bg" onclick="if(event.target===this)closeM()"><div class="modal ${cls}"><div class="mh">${head}</div><div class="mb">${body}</div>${foot?`<div class="mf">${foot}</div>`:''}</div></div>`}
-function modalView(){
+function modalView(){const h=modalView0();
+ const ed=modal&&(modal.type==='task'?(!modal.t.id||(!!modal.edit&&canEditTask(modal.t))):modal.type==='event'?!!modal.edit:false);
+ return ed?h.replace('<div class="modal ','<div class="modal medit '):h}
+function modalView0(){
 
  if(modal.type==='task'){const t=modal.t,isNew=!t.id,canEd=canEditTask(t),ed=isNew||(!!modal.edit&&canEd),asg=ed,crt=t.by&&S.users.find(u=>u.id===t.by);
   const ext=me.team&&t.team!==me.team&&isNew, others=S.users.filter(u=>u.role!=='guest'&&u.id!==t.own);
@@ -1292,7 +1317,7 @@ const canEditTask=t=>!t.id||(HAS_TBY&&t.by?t.by===me.id:can.edit(t))||(!t.own&&c
 function openTask(id,team){if(!id&&!can.create())return;
  const t=id?JSON.parse(JSON.stringify(S.tasks.find(x=>x.id===id))):{t:'',team:team||me.team||'MK',req:null,own:me.role==='member'&&(!team||team===me.team)?me.id:null,s:iso(TODAY),e:iso(new Date(TODAY.getTime()+14*864e5)),p:0,dep:null,asg:[],c:[]};
  modal={type:'task',t,edit:!id};render()}
-function setTheme(t){if(modal&&modal.type==='settings')setsCollect();theme=t==='dark'?'dark':'light';try{localStorage.setItem('tedx_theme',theme)}catch(e){}document.documentElement.dataset.theme=theme;render()}
+function setTheme(t){if(modal&&modal.type==='settings')setsCollect();theme=t==='dark'?'dark':'light';try{localStorage.setItem('tedx_theme',theme)}catch(e){}document.documentElement.dataset.theme=theme;themeColor();render()}
 function collect(){const t=modal.t,g=id=>document.getElementById(id);
  if(g('ft'))t.t=g('ft').value;if(g('fown'))t.own=g('fown').value||null;if(g('fs'))t.s=g('fs').value;if(g('fe'))t.e=g('fe').value;if(g('fdep'))t.dep=g('fdep').value?+g('fdep').value:null;if(g('fasgbox'))t.asg=[...document.querySelectorAll('.fasg:checked')].map(i=>i.value).filter(v=>v!==t.own);if(g('fc'))modal.draft=g('fc').value}
 function saveTask(){collect();const t=modal.t;if(!t.t.trim())return alert('Inserisci un titolo');if(t.e<t.s)return alert('La scadenza precede l\'inizio');
