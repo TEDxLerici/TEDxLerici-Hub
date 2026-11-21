@@ -67,3 +67,10 @@ Senza queste variabili l'evento viene salvato normalmente e l'app avvisa che l'e
 - **Script delle riunioni**: scelta della riunione, caricamento di file `.txt/.md/.vtt/.srt` (tempi e numerazione dei sottotitoli vengono rimossi) o testo incollato; resta il pulsante «Suggerisci task con Claude».
 - Migrazione **009** (`db/migrations/009_note_personali.sql`, richiede la 006): tabella `pnotes` con RLS (privata all'autore finché non ha un evento). Senza migrazione l'app avvisa e non salva le note.
 - Le vecchie «note private di team» non sono più mostrate; le proposte già fatte all'OdG restano nell'ordine del giorno.
+
+## Utenti e permessi, Debug
+
+- **Utenti e permessi** è visibile solo a superadmin e team lead (membri e ospiti non la vedono, nemmeno aprendo il link).
+  - Superadmin, tre schede: **Utenti** (filtro per ruolo, ricerca, ruolo e team per persona, conferme per Superadmin/Ospite, avviso «Senza team»), **Vista team lead** (esattamente ciò che vede un team lead nel suo team, con selettore del team) e **Matrice permessi**.
+  - Team lead: vede solo le card dei propri team (membri, aggiunta/rimozione, accesso all'area ai membri di altri team) e la matrice permessi.
+- **Debug**: filtri per categoria e «Le mie», ricerca nel testo, conferma «Nota salvata», pulsante «Copia aperte» (il superadmin copia l'elenco delle segnalazioni aperte da incollare dove serve). Nessuna nuova migrazione.
