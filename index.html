@@ -257,6 +257,7 @@ table.rep tr.rdone td{background:rgba(34,163,95,.09)}table.rep tr.rdone td:first
 .pnc{display:flex;gap:6px;flex-wrap:wrap;margin-bottom:8px}.pnc button{padding:6px 12px;border-radius:999px;border:1px solid var(--line);background:transparent;color:var(--ink2);font-size:13px;font-weight:600}.pnc button.on{background:var(--ink);color:var(--card);border-color:var(--ink)}
 .pnap{font-size:13px;color:var(--ink2)}.evn{color:var(--info-c);font-weight:600}
 #pnx{width:100%;min-height:90px;resize:vertical}
+.fbar{display:flex;gap:6px;flex-wrap:wrap;align-items:center;margin-bottom:12px}.fbar button:not(.btn){padding:6px 12px;border-radius:999px;border:1px solid var(--line);background:transparent;color:var(--ink2);font-size:13px;font-weight:600}.fbar button.on{background:var(--ink);color:var(--card);border-color:var(--ink)}.fbar input{flex:1 1 150px;min-width:0}
 /* ---- Panoramica: evento main + prossimo evento per me ---- */
 .mainrow{display:flex;align-items:center;gap:12px;padding:8px 10px 8px 18px;margin-bottom:14px;min-height:52px}
 .mainrow .mi{color:var(--red);font-size:18px;flex:none}.mainrow .mt{font-weight:700;white-space:nowrap}
@@ -556,7 +557,7 @@ function render(){
  const teamNavB=me.role==='guest'?'':Object.entries(TEAMS).filter(([k])=>teamAccess(k)).map(([k,T])=>`<button class="${view==='teamhub'&&curTeam===k?'on':''}" onclick="openTeam('${k}')"><span class="dot" style="background:${T.c};width:10px;height:10px;margin:0 4px"></span>${T.name}</button>`).join('');
  const dbg=`<button class="${view==='debug'?'on':''}" onclick="go('debug')"><span class="ic">🐞</span>Debug${isSA()&&openReps()?`<span class="badge">${openReps()}</span>`:''}</button>`;
  const adm=can.access()?`<button class="${view==='admin'?'on':''}" onclick="go('admin')"><span class="ic">🛡</span>Utenti e permessi</button>`:'';
- applyDefs();if(view==='files')view='overview';
+ applyDefs();if(view==='files'||(view==='admin'&&!can.access()))view='overview';
  const IC={overview:'<path d="M3 11l9-8 9 8v9a1 1 0 0 1-1 1h-5v-6H9v6H4a1 1 0 0 1-1-1z"/>',team:'<circle cx="9" cy="8" r="3.5"/><path d="M2.5 20c0-3.2 3-5 6.5-5s6.5 1.8 6.5 5M16 5a3.2 3.2 0 0 1 0 6.2M18 15.5c2.2.5 3.5 2 3.5 4.5"/>',timeline:'<path d="M4 6h9M8 12h12M6 18h10"/>',calendar:'<path d="M4 5h16v15H4zM4 10h16M9 3v4M15 3v4"/>',more:'<circle cx="5" cy="12" r="1.2"/><circle cx="12" cy="12" r="1.2"/><circle cx="19" cy="12" r="1.2"/>'};
  const tabB=[['overview','Home'],['team','Team'],['timeline','Timeline'],['calendar','Calendario']].map(([k,l])=>{const on=view===k||(k==='team'&&view==='teamhub');return `<button class="${on?'on':''}" aria-label="${l}" onclick="go('${k}')"><svg viewBox="0 0 24 24" aria-hidden="true">${IC[k]}</svg>${on?l:''}</button>`}).join('');
  const alert_=inbox()||pendSug()||(isSA()&&openReps());
@@ -814,15 +815,40 @@ function teamView(){return header('Persone','Team')+BODY+`<div class="grid">${Ob
  ${can.manageTeam(k)?`<button class="btn ghost sm" style="width:100%;margin-top:12px" onclick="modal={type:'addMember',team:'${k}'};render()">+ Aggiungi membro</button>`:''}</div>`).join('')}</div>`}
 
 /* ---------- ADMIN ---------- */
-function adminView(){if(!isSA())return header('Amministrazione','Utenti e permessi')+BODY+accessCards(Object.keys(TEAMS).filter(canGrant));
- return header('Amministrazione','Utenti e permessi',`<button class="btn" onclick="modal={type:'newUser'};render()">+ Nuovo utente</button>`)+BODY+`
- <div class="card" style="overflow:auto"><table class="utab"><tr><th>UTENTE</th><th>EMAIL</th><th>RUOLO</th><th>TEAM</th><th></th></tr>${S.users.map(u=>`<tr><td><div style="display:flex;gap:10px;align-items:center">${av(u)}<b>${esc(u.name)}</b></div></td><td data-l="Email" style="overflow-wrap:anywhere">${esc(u.email)}</td>
- <td data-l="Ruolo"><select onchange="setUser('${u.id}','role',this.value)" ${u.id===me.id?'disabled':''}>${Object.entries(ROLES).map(([k,r])=>`<option value="${k}" ${u.role===k?'selected':''}>${r.l}</option>`).join('')}</select></td>
- <td data-l="Team"><select onchange="setUser('${u.id}','team',this.value||null)" ${['guest','superadmin'].includes(u.role)?'disabled':''}><option value="">—</option>${Object.entries(TEAMS).map(([k,T])=>`<option value="${k}" ${u.team===k?'selected':''}>${T.name}</option>`).join('')}</select></td>
- <td>${u.id!==me.id?`<button class="x-btn" onclick="delUser('${u.id}')">Elimina</button>`:''}</td></tr>`).join('')}</table></div>
- ${accessCards(Object.keys(TEAMS))}
- <div class="card pad" style="margin-top:20px;overflow:auto"><h3 style="margin-bottom:10px">Matrice permessi</h3><table><tr><th>AZIONE</th><th>OSPITE</th><th>MEMBRO</th><th>TEAM LEAD</th><th>SUPERADMIN</th></tr>
+let admTab='utenti',admTeam='',admQ='',admRole='';
+const ROLE_D={superadmin:'Vede e gestisce tutto, assegna i ruoli.',lead:'Gestisce membri, accessi e task del proprio team.',member:'Lavora nel proprio team; non vede questa sezione.',guest:'Sola lettura (timeline, panoramica, calendario).'};
+function matrixCard(){return `<div class="card pad" style="margin-top:20px;overflow:auto"><h3 style="margin-bottom:10px">Matrice permessi</h3><table><tr><th>AZIONE</th><th>OSPITE</th><th>MEMBRO</th><th>TEAM LEAD</th><th>SUPERADMIN</th></tr>
  ${[['Timeline, panoramica, calendario','✓','✓','✓','✓'],['Creare task (proprio team o altri team)','—','✓','✓','✓'],['Assegnare task a persone','—','Solo prendere in carico','Proprio team','Tutte'],['Modificare task','—','Assegnate a sé','Proprio team','Tutte'],['Commentare','—','✓','✓','✓'],['Modificare i propri commenti','—','✓','✓','✓'],['Eliminare commenti','—','Propri','Propri','Tutti'],['Creare eventi calendario','—','—','✓','✓'],['Note personali (le vede solo l\'autore finché non le applica a un evento)','—','✓','✓','✓'],['Creare meeting e punti fissi','—','—','✓','✓'],['Gestire membri team','—','—','Proprio team','Tutti'],['Aree di lavoro e fogli del team','—','Proprio team + accessi concessi','Tutte le aree','Tutte le aree'],['Concedere accesso a un\'area team','—','—','Proprio team','Tutte le aree'],['Tesoreria (password)','—','Area Partner + password','Con password','Con password'],['Gestire utenti e ruoli','—','—','—','✓']].map(r=>`<tr>${r.map((c,i)=>i?`<td>${c}</td>`:`<td><b>${c}</b></td>`).join('')}</tr>`).join('')}</table></div>`}
+function admSearch(v){admQ=v;render();const i=document.getElementById('admq');if(i){i.focus();i.setSelectionRange(v.length,v.length)}}
+function setRole(id,v){const u=S.users.find(x=>x.id===id);if(!u||!isSA()||u.id===me.id||u.role===v)return;
+ if(v==='superadmin'&&!confirm('Dare a '+u.name+' il ruolo di Superadmin? Potrà vedere e modificare tutto.')){render();return}
+ if(['guest','superadmin'].includes(v)&&u.team&&!confirm(u.name+' verrà tolto dal team '+TEAMS[u.team].name+'. Procedere?')){render();return}
+ setUser(id,'role',v)}
+function usersTab(){const q=admQ.trim().toLowerCase(),cnt=k=>S.users.filter(u=>u.role===k).length;
+ const us=S.users.filter(u=>(!admRole||u.role===admRole)&&(!q||(u.name+' '+u.email).toLowerCase().includes(q)));
+ return `<div class="fbar">${[['','Tutti',S.users.length],...Object.entries(ROLES).map(([k,r])=>[k,r.l,cnt(k)])].map(([k,l,n])=>`<button class="${admRole===k?'on':''}" onclick="admRole='${k}';render()">${l} <span style="opacity:.7">${n}</span></button>`).join('')}<input id="admq" type="search" placeholder="Cerca nome o email…" value="${esc(admQ)}" oninput="admSearch(this.value)"></div>
+ <div class="card" style="overflow:auto"><table class="utab"><tr><th>UTENTE</th><th>EMAIL</th><th>RUOLO</th><th>TEAM</th><th></th></tr>${us.map(u=>`<tr><td><div style="display:flex;gap:10px;align-items:center">${av(u)}<div><b>${esc(u.name)}</b>${u.id===me.id?'<small style="display:block;color:var(--muted)">Tu</small>':''}</div></div></td><td data-l="Email" style="overflow-wrap:anywhere">${esc(u.email)}</td>
+ <td data-l="Ruolo"><select onchange="setRole('${u.id}',this.value)" ${u.id===me.id?'disabled title="Non puoi cambiare il tuo ruolo"':''}>${Object.entries(ROLES).map(([k,r])=>`<option value="${k}" ${u.role===k?'selected':''}>${r.l}</option>`).join('')}</select></td>
+ <td data-l="Team"><select onchange="setUser('${u.id}','team',this.value||null)" ${['guest','superadmin'].includes(u.role)?'disabled':''}><option value="">—</option>${Object.entries(TEAMS).map(([k,T])=>`<option value="${k}" ${u.team===k?'selected':''}>${T.name}</option>`).join('')}</select>${['member','lead'].includes(u.role)&&!u.team?'<small style="display:block;color:var(--warn-c);margin-top:3px">⚠ Senza team</small>':''}</td>
+ <td>${u.id!==me.id?`<button class="x-btn" onclick="delUser('${u.id}')">Elimina</button>`:''}</td></tr>`).join('')||'<tr><td colspan="5" class="empty" style="padding:22px">Nessun utente trovato.</td></tr>'}</table></div>
+ <div class="card pad" style="margin-top:16px"><h3 style="margin-bottom:8px">Cosa può fare ciascun ruolo</h3>${Object.entries(ROLES).map(([k,r])=>`<div class="li"><div style="flex:1"><b>${r.l}</b><small>${ROLE_D[k]||''}</small></div></div>`).join('')}</div>`}
+function teamAdminCard(k){const T=TEAMS[k],mem=S.users.filter(u=>u.team===k).sort((a,b)=>(b.role==='lead')-(a.role==='lead')||a.name.localeCompare(b.name)),leads=mem.filter(u=>u.role==='lead'),elig=S.users.filter(u=>u.role==='member'&&u.team!==k);
+ return `<div class="card pad" style="margin-bottom:16px"><h3 style="display:flex;gap:8px;align-items:center"><span class="dot" style="width:10px;height:10px;background:${T.c}"></span>${T.name}</h3>
+ <small style="color:var(--muted)">${mem.length} ${mem.length===1?'membro':'membri'} · ${S.tasks.filter(t=>t.team===k).length} task · Lead: ${leads.map(u=>esc(u.name)).join(', ')||'nessuno'}</small>
+ <h4 style="margin:14px 0 4px;font-size:13px;color:var(--ink2)">MEMBRI</h4>
+ ${mem.map(u=>`<div class="li">${av(u)}<div style="flex:1;min-width:0"><b>${esc(u.name)}</b><small style="overflow-wrap:anywhere">${ROLES[u.role].l} · ${esc(u.email)}</small></div>${can.manageTeam(k)&&u.id!==me.id&&u.role!=='superadmin'?`<button class="x-btn" onclick="removeFromTeam('${u.id}')">Rimuovi</button>`:''}</div>`).join('')||'<div class="empty">Nessun membro in questo team.</div>'}
+ ${can.manageTeam(k)?`<button class="btn ghost sm" style="width:100%;margin-top:10px" onclick="modal={type:'addMember',team:'${k}'};render()">+ Aggiungi membro</button>`:''}
+ <h4 style="margin:18px 0 2px;font-size:13px;color:var(--ink2)">ACCESSO ALL'AREA DEL TEAM</h4>
+ <p style="color:var(--muted);font-size:12.5px;margin:0 0 6px">Ogni persona vede l'area del proprio team; i team lead e il superadmin le vedono tutte. Spunta chi, da altri team, può accedere a quest'area.</p>
+ ${CLOUD&&!HAS_ACC?`<div class="info">Per gestire gli accessi esegui la migrazione SQL 003 (cartella db/migrations).</div>`:''}
+ ${elig.map(u=>`<label class="li" style="cursor:pointer">${av(u)}<div style="flex:1"><b>${esc(u.name)}</b><small>${u.team?TEAMS[u.team].name:'Senza team'}</small></div><input type="checkbox" style="width:auto" ${(u.access||[]).includes(k)?'checked':''} ${canGrant(k)?'':'disabled'} onchange="toggleAccess('${esc(u.id)}','${k}',this.checked)"></label>`).join('')||'<div class="empty">Nessun altro membro a cui concedere l\'accesso.</div>'}</div>`}
+function teamLeaderTab(){const ks=Object.keys(TEAMS),k=ks.includes(admTeam)?admTeam:ks[0];
+ return `<div class="info" style="margin-bottom:12px">Vista <b>Team lead</b>: è quello che vede un team lead nel proprio team. Scegli il team da guardare.</div>
+ <div class="fbar">${ks.map(x=>`<button class="${x===k?'on':''}" onclick="admTeam='${x}';render()">${TEAMS[x].name}</button>`).join('')}</div>${teamAdminCard(k)}`}
+function adminView(){if(!can.access())return overview();
+ if(!isSA())return header('Il tuo team','Team e accessi')+BODY+Object.keys(TEAMS).filter(canGrant).map(teamAdminCard).join('')+matrixCard();
+ const tabs=[['utenti','Utenti'],['team','Vista team lead'],['permessi','Matrice permessi']];
+ return header('Amministrazione','Utenti e permessi',admTab==='utenti'?`<button class="btn" onclick="modal={type:'newUser'};render()">+ Nuovo utente</button>`:'')+`<div class="tabs">${tabs.map(([k,l])=>`<button class="${admTab===k?'on':''}" onclick="admTab='${k}';render()">${l}</button>`).join('')}</div>`+BODY+(admTab==='utenti'?usersTab():admTab==='team'?teamLeaderTab():matrixCard())}
 
 /* ================= AREE TEAM E FOGLI ================= */
 const STATI_PARTNER=['Da contattare','In trattativa','Confermato','Contratto firmato','Pagato'];
@@ -996,10 +1022,11 @@ function exportSheet(key,tpl){const sh={...SHEETS[key],cols:colsOf(key)},cell=(c
 
 /* ---- Debug: segnalazioni di tutti, risposte e archivio solo per il superadmin ---- */
 const REP_CAT={bug:['Bug di sistema','var(--red)','var(--red-soft)'],miglioria:['Miglioria','var(--info-c)','var(--info-bg)'],modifica:['Modifica di esistente','var(--warn-c)','var(--warn-bg)']};
-let repTab='open';
+let repTab='open',repCat='',repQ='',repMine=false;
 const openReps=()=>(S.reports||[]).filter(r=>r.status!=='ripristinata').length;
 function debugView(){const all=S.reports||[],open=all.filter(r=>r.status!=='ripristinata'),arch=all.filter(r=>r.status==='ripristinata'),sa=isSA();
- const list=(repTab==='arch'?arch:open).slice().sort((a,b)=>(repTab==='arch'?String(b.done_at||'').localeCompare(String(a.done_at||'')):0)||b.id-a.id);
+ const flt=r=>(!repCat||r.cat===repCat)&&(!repMine||r.by===me.id)&&(!repQ||(r.title+' '+(r.body||'')+' '+(r.note||'')).toLowerCase().includes(repQ.toLowerCase()));
+ const list=(repTab==='arch'?arch:open).filter(flt).slice().sort((a,b)=>(repTab==='arch'?String(b.done_at||'').localeCompare(String(a.done_at||'')):0)||b.id-a.id);
  const row=r=>{const c=REP_CAT[r.cat]||REP_CAT.bug,u=S.users.find(x=>x.id===r.by);
   return `<tr class="${r.status==='ripristinata'?'rdone':''}"><td class="rpw">${u?`<div style="display:flex;gap:8px;align-items:center">${av(u)}<div style="min-width:0"><b>${esc(u.name)}</b><small style="display:block;color:var(--muted)">${esc(fmtShort(r.created))}</small></div></div>`:`<span style="color:var(--muted)">Utente rimosso</span>`}</td>
   <td><b style="word-break:break-word">${esc(r.title)}</b>${r.body?`<div class="rpb">${esc(r.body)}</div>`:''}</td>
@@ -1010,13 +1037,18 @@ function debugView(){const all=S.reports||[],open=all.filter(r=>r.status!=='ripr
  return header('Supporto','Debug',`<button class="btn" onclick="openReport()">+ Nuova segnalazione</button>`)+`<div class="tabs"><button class="${repTab==='open'?'on':''}" onclick="repTab='open';render()">Aperte <span class="chip" style="background:var(--soft);color:var(--ink2);margin-left:4px">${open.length}</span></button><button class="${repTab==='arch'?'on':''}" onclick="repTab='arch';render()">Archivio <span class="chip" style="background:var(--soft);color:var(--ink2);margin-left:4px">${arch.length}</span></button></div>`+BODY+
  (CLOUD&&!HAS_REP?`<div class="info">Per usare le segnalazioni serve la migrazione SQL 006: ${isSA()?'esegui <b>db/migrations/006_sezioni_segnalazioni_task.sql</b> nel SQL Editor di Supabase.':'chiedi al superadmin di eseguirla.'}</div>`:
  `<p style="color:var(--muted);font-size:13px;margin:0 0 12px">Qualcosa non va o vuoi proporre un miglioramento? Segnalalo qui: lo vedono tutti, il superadmin risponde e, quando è sistemato, lo segna come completato (in verde) e lo manda in archivio.</p>
- <div class="shwrap"><table class="rep"><thead><tr><th>Segnalata da</th><th>Titolo</th><th>Categoria</th><th>Note del superadmin</th><th></th></tr></thead><tbody>${list.map(row).join('')||`<tr><td colspan="5" class="empty" style="padding:22px">${repTab==='arch'?'Nessuna segnalazione in archivio.':'Nessuna segnalazione aperta.'}</td></tr>`}</tbody></table></div>`)}
+ <div class="fbar">${[['','Tutte'],...Object.entries(REP_CAT).map(([k,c])=>[k,c[0]])].map(([k,l])=>`<button class="${repCat===k?'on':''}" onclick="repCat='${k}';render()">${l}</button>`).join('')}<button class="${repMine?'on':''}" onclick="repMine=!repMine;render()">Le mie</button><input id="repq" type="search" placeholder="Cerca…" value="${esc(repQ)}" oninput="repSearch(this.value)">${sa?`<button class="btn ghost sm" onclick="copyReps()">Copia aperte</button>`:''}</div>
+ <div class="shwrap"><table class="rep"><thead><tr><th>Segnalata da</th><th>Titolo</th><th>Categoria</th><th>Note del superadmin</th><th></th></tr></thead><tbody>${list.map(row).join('')||`<tr><td colspan="5" class="empty" style="padding:22px">${(repCat||repQ||repMine)?'Nessuna segnalazione con questi filtri.':repTab==='arch'?'Nessuna segnalazione in archivio.':'Nessuna segnalazione aperta. 🎉'}</td></tr>`}</tbody></table></div>`)}
 const fmtShort=d=>d?new Date(d+'T12:00:00').toLocaleDateString('it-IT',{day:'numeric',month:'short',year:'numeric'}):'';
 function openReport(){modal={type:'report',r:{title:'',cat:'bug',body:''}};render();setTimeout(()=>{const e=document.getElementById('rpt');if(e)e.focus()})}
 function saveReport(){const title=(document.getElementById('rpt').value||'').trim().slice(0,160),cat=document.getElementById('rpc').value,body=(document.getElementById('rpb').value||'').trim().slice(0,4000);
  if(!title)return alert('Scrivi un titolo per la segnalazione.');if(!REP_CAT[cat])return;if(CLOUD&&!HAS_REP)return alert('Serve la migrazione SQL 006 (cartella db/migrations).');
  S.reports.push({id:nid(S.reports),by:me.id,title,cat,body,status:'aperta',note:'',created:iso(TODAY),done_at:null,done_by:null});repTab='open';save();closeM()}
-function setRepNote(id,v){if(!isSA())return;const r=S.reports.find(x=>x.id===id);if(!r||r.note===v)return;r.note=v.slice(0,4000);save()}
+function repSearch(v){repQ=v;render();const i=document.getElementById('repq');if(i){i.focus();i.setSelectionRange(v.length,v.length)}}
+function copyReps(){const o=(S.reports||[]).filter(r=>r.status!=='ripristinata').sort((a,b)=>a.id-b.id);if(!o.length)return toast('Nessuna segnalazione aperta');
+ const tx=o.map((r,i)=>`${i+1}. [${(REP_CAT[r.cat]||REP_CAT.bug)[0]}] ${r.title}${r.body?'\n   '+r.body.replace(/\n/g,'\n   '):''}${r.note?'\n   Note: '+r.note:''}\n   (da ${(S.users.find(u=>u.id===r.by)||{name:'—'}).name}, ${fmtShort(r.created)})`).join('\n');
+ navigator.clipboard?.writeText(tx).then(()=>toast('Elenco delle segnalazioni aperte copiato'),()=>alert(tx))}
+function setRepNote(id,v){if(!isSA())return;const r=S.reports.find(x=>x.id===id);if(!r||r.note===v)return;r.note=v.slice(0,4000);save();toast('Nota salvata')}
 function resolveReport(id,on){if(!isSA())return;const r=S.reports.find(x=>x.id===id);if(!r)return;
  const ta=document.querySelector('.rep textarea');
  r.status=on?'ripristinata':'aperta';r.done_at=on?iso(TODAY):null;r.done_by=on?me.id:null;save();render();toast(on?'Segnalazione completata e spostata in archivio':'Segnalazione riaperta')}
@@ -1028,14 +1060,6 @@ async function toggleAccess(uid,tm,on){
  if(!CLOUD){const u=S.users.find(x=>x.id===uid);if(!u)return;const a=new Set(u.access||[]);on?a.add(tm):a.delete(tm);u.access=[...a];if(me.id===uid)me=u;save();render();return}
  if(!HAS_ACC)return alert('Serve la migrazione SQL 003 (cartella db/migrations).');
  syncing=syncing.then(async()=>{const r=await sb.rpc('set_team_access',{uid,tm,allow:on});if(r.error)alert(r.error.message);try{await load();me=S.users.find(u=>u.id===me.id)||me}catch(e){alert(e.message)}render()});return syncing}
-function accessCards(teams){
- return `<div style="margin-top:20px"><h3 style="margin-bottom:4px">Accesso alle aree dei team</h3><p style="color:var(--muted);font-size:13px;margin-bottom:12px">Ogni persona vede l'area del proprio team. Team lead e superadmin vedono tutte le aree. Qui concedi l'accesso a persone di altri team.</p>
- ${CLOUD&&!HAS_ACC?`<div class="info">Per gestire gli accessi esegui la migrazione SQL 003 (cartella db/migrations).</div>`:''}
- <div class="grid">${teams.map(k=>{const T=TEAMS[k],elig=S.users.filter(u=>u.role==='member'&&u.team!==k);
-  return `<div class="card pad"><h3 style="display:flex;gap:8px;align-items:center"><span class="dot" style="width:10px;height:10px;background:${T.c}"></span>Area ${T.name}</h3>
-  <small style="color:var(--muted)">${S.users.filter(u=>u.team===k).length} membri · ${S.users.filter(u=>u.role==='lead'||u.role==='superadmin').length} lead/superadmin con accesso totale</small>
-  <div style="margin-top:10px">${elig.map(u=>`<label class="li" style="cursor:pointer">${av(u)}<div style="flex:1"><b>${esc(u.name)}</b><small>${u.team?TEAMS[u.team].name:'Senza team'}</small></div><input type="checkbox" style="width:auto" ${(u.access||[]).includes(k)?'checked':''} onchange="toggleAccess('${esc(u.id)}','${k}',this.checked)"></label>`).join('')||'<div class="empty">Nessun altro membro a cui concedere l\'accesso.</div>'}</div></div>`}).join('')}</div></div>`}
-
 /* ---- colonne dei fogli: aggiungere / rimuovere ---- */
 const TYPE_L={text:'Testo',num:'Numero',eur:'Importo €',date:'Data',sel:'Tendina',url:'Link'};
 function colsOf(key){const sh=SHEETS[key],cc=S.sheet_cols.filter(c=>c.sheet===key),hid=new Set(cc.filter(c=>c.kind==='hide').map(c=>c.k));
