@@ -253,6 +253,10 @@ table.rep tr.rdone td{background:rgba(34,163,95,.09)}table.rep tr.rdone td:first
 .chip.rok{background:rgba(34,163,95,.16);color:#1f9d55;display:inline-flex;margin-top:6px;font-weight:600}
 
 @media(max-height:500px) and (orientation:landscape) and (min-width:901px){aside{display:none}.two{grid-template-columns:minmax(0,1fr)}.mhead{padding:14px 16px 0}.mbody{padding:14px 16px 24px}}
+
+.pnc{display:flex;gap:6px;flex-wrap:wrap;margin-bottom:8px}.pnc button{padding:6px 12px;border-radius:999px;border:1px solid var(--line);background:transparent;color:var(--ink2);font-size:13px;font-weight:600}.pnc button.on{background:var(--ink);color:var(--card);border-color:var(--ink)}
+.pnap{font-size:13px;color:var(--ink2)}.evn{color:var(--info-c);font-weight:600}
+#pnx{width:100%;min-height:90px;resize:vertical}
 /* ---- Panoramica: evento main + prossimo evento per me ---- */
 .mainrow{display:flex;align-items:center;gap:12px;padding:8px 10px 8px 18px;margin-bottom:14px;min-height:52px}
 .mainrow .mi{color:var(--red);font-size:18px;flex:none}.mainrow .mt{font-weight:700;white-space:nowrap}
@@ -297,6 +301,7 @@ table.rep tr.rdone td{background:rgba(34,163,95,.09)}table.rep tr.rdone td:first
  .mst button{display:flex;align-items:center;gap:12px;width:100%;padding:14px 8px;border-bottom:1px solid var(--line);font-weight:600;font-size:15px;text-align:left}.mst button:last-child{border-bottom:0}
  .mst .badge{margin-left:auto;background:var(--red);color:#fff;font-size:11px;border-radius:10px;padding:1px 8px}
  #root[data-view=overview] .head .btn,.btn.sm{background:transparent;color:var(--ink);border:1px solid var(--line2)}
+ .btn.sm.pri{background:var(--pri);color:var(--prit);border:0}
  .mst .ic{width:24px;display:inline-flex;justify-content:center;flex:none}
  .modal-bg{place-items:end center}.modal,.modal.wide{width:100%;border-radius:28px 28px 0 0;max-height:92dvh}
  .modal.medit{height:100dvh;max-height:100dvh;border-radius:0}
@@ -397,9 +402,10 @@ sheet_rows:[
 };
 const CLOUD=!!(CFG.url&&CFG.key&&window.supabase);
 const sb=CLOUD?supabase.createClient(CFG.url,CFG.key):null;
-let S, last=null, loading=CLOUD, bootErr='', HAS_ASG=true, HAS_NUM=true, HAS_MIN=true, HAS_SUG=true, HAS_PROF=true, HAS_SHEETS=true, HAS_ACC=true, HAS_COLS=true, HAS_EVX=true, HAS_EVY=true, HAS_TBY=true, HAS_REP=true, HAS_DEF=true, HAS_SET=true;
-if(CLOUD)S={users:[],tasks:[],events:[],files:[],notes:[],meetings:[],folders:[],suggestions:[],sheet_rows:[],sheet_cols:[],reports:[],sheet_defs:[],settings:{}};
+let S, last=null, loading=CLOUD, bootErr='', HAS_ASG=true, HAS_NUM=true, HAS_MIN=true, HAS_SUG=true, HAS_PROF=true, HAS_SHEETS=true, HAS_ACC=true, HAS_COLS=true, HAS_EVX=true, HAS_EVY=true, HAS_TBY=true, HAS_REP=true, HAS_PN=true, pnCat='commento', pnDraft='', HAS_DEF=true, HAS_SET=true;
+if(CLOUD)S={users:[],tasks:[],events:[],files:[],notes:[],pnotes:[],meetings:[],folders:[],suggestions:[],sheet_rows:[],sheet_cols:[],reports:[],sheet_defs:[],settings:{}};
 else{try{S=JSON.parse(localStorage.getItem('tedxl2'))}catch(e){} if(!S||!S.meetings)S=JSON.parse(JSON.stringify(seed));}
+if(!S.pnotes)S.pnotes=[];
 if(!S.suggestions)S.suggestions=[];
 if(!S.sheet_cols)S.sheet_cols=[];if(!S.reports)S.reports=[];if(!S.sheet_defs)S.sheet_defs=[];if(!S.settings)S.settings={};
 if(!S.sheet_rows)S.sheet_rows=CLOUD?[]:JSON.parse(JSON.stringify(seed.sheet_rows));
@@ -418,14 +424,14 @@ const save=()=>{if(CLOUD){sync();return}try{localStorage.setItem('tedxl2',JSON.s
 const TABLES=['tasks','events','files','notes','meetings'];
 async function load(){
  const names=['profiles',...TABLES,'folders'];
- const res=await Promise.all([...names.map(n=>sb.from(n).select('*')),sb.from('suggestions').select('*'),sb.from('sheet_rows').select('*'),sb.from('sheet_cols').select('*'),sb.from('events').select('mode').limit(1),sb.from('events').select('by,h2,teams,people,emails').limit(1),sb.from('tasks').select('by').limit(1),sb.from('reports').select('*'),sb.from('sheet_defs').select('*'),sb.from('hub_settings').select('*')]);
- const rst=res.pop(),rdf=res.pop(),rrp=res.pop(),rtb=res.pop(),rey=res.pop(),rpr=res.pop(),rco=res.pop(),rsh=res.pop(),rs=res.pop();
+ const res=await Promise.all([...names.map(n=>sb.from(n).select('*')),sb.from('suggestions').select('*'),sb.from('sheet_rows').select('*'),sb.from('sheet_cols').select('*'),sb.from('events').select('mode').limit(1),sb.from('events').select('by,h2,teams,people,emails').limit(1),sb.from('tasks').select('by').limit(1),sb.from('reports').select('*'),sb.from('sheet_defs').select('*'),sb.from('hub_settings').select('*'),sb.from('pnotes').select('*')]);
+ const rpn=res.pop(),rst=res.pop(),rdf=res.pop(),rrp=res.pop(),rtb=res.pop(),rey=res.pop(),rpr=res.pop(),rco=res.pop(),rsh=res.pop(),rs=res.pop();
  const err=res.find(r=>r.error);if(err)throw err.error;
  const [p,...rest]=res;S.users=p.data;
  TABLES.forEach((t,i)=>S[t]=rest[i].data);
  S.folders=rest[TABLES.length].data.map(x=>x.name).sort();
  HAS_SUG=!rs.error;S.suggestions=HAS_SUG?rs.data:[];
- HAS_COLS=!rco.error;S.sheet_cols=HAS_COLS?rco.data:[];S.sheet_cols.forEach(c=>c.o=c.o||[]);HAS_EVX=!rpr.error;HAS_EVY=!rey.error;HAS_TBY=!rtb.error;HAS_REP=!rrp.error;S.reports=HAS_REP?(rrp.data||[]):[];HAS_DEF=!rdf.error;S.sheet_defs=HAS_DEF?(rdf.data||[]):[];HAS_SET=!rst.error;S.settings={};if(HAS_SET)(rst.data||[]).forEach(x=>S.settings[x.k]=x.v);S.events.forEach(e=>{e.teams=e.teams||[];e.people=e.people||[];e.emails=e.emails||[]});
+ HAS_COLS=!rco.error;S.sheet_cols=HAS_COLS?rco.data:[];S.sheet_cols.forEach(c=>c.o=c.o||[]);HAS_EVX=!rpr.error;HAS_EVY=!rey.error;HAS_TBY=!rtb.error;HAS_REP=!rrp.error;S.reports=HAS_REP?(rrp.data||[]):[];HAS_DEF=!rdf.error;S.sheet_defs=HAS_DEF?(rdf.data||[]):[];HAS_PN=!!rpn&&!rpn.error;S.pnotes=HAS_PN?(rpn.data||[]):[];HAS_SET=!rst.error;S.settings={};if(HAS_SET)(rst.data||[]).forEach(x=>S.settings[x.k]=x.v);S.events.forEach(e=>{e.teams=e.teams||[];e.people=e.people||[];e.emails=e.emails||[]});
  HAS_SHEETS=!rsh.error;S.sheet_rows=HAS_SHEETS?rsh.data:[];
  tesOK=false;if(HAS_SHEETS){try{const t=await sb.rpc('tes_status');tesOK=t.data===true}catch(e){}}
  HAS_ASG=!S.tasks.length||'asg' in S.tasks[0];HAS_NUM=!S.tasks.length||'num' in S.tasks[0];
@@ -448,7 +454,7 @@ let syncing=Promise.resolve();
 function sync(){syncing=syncing.then(doSync);return syncing}
 async function doSync(){
  const errs=[];const strip=(t,o)=>{if(t==='tasks'){const {c,...r}=o;if(!HAS_TBY)delete r.by;if(!HAS_ASG)delete r.asg;if(!HAS_NUM)delete r.num;return r}if(t==='events'){let r={...o};if(!HAS_EVX){delete r.mode;delete r.link}if(!HAS_EVY){delete r.by;delete r.h2;delete r.teams;delete r.people;delete r.emails}return r}if(t==='meetings'&&!HAS_MIN){const {minutes,...r}=o;return r}return o};
- for(const t of [...TABLES,...(HAS_SUG?['suggestions']:[]),...(HAS_SHEETS?['sheet_rows']:[]),...(HAS_COLS?['sheet_cols']:[]),...(HAS_REP?['reports']:[]),...(HAS_DEF?['sheet_defs']:[])]){
+ for(const t of [...TABLES,...(HAS_SUG?['suggestions']:[]),...(HAS_SHEETS?['sheet_rows']:[]),...(HAS_COLS?['sheet_cols']:[]),...(HAS_REP?['reports']:[]),...(HAS_PN?['pnotes']:[]),...(HAS_DEF?['sheet_defs']:[])]){
   const old=new Map(last[t].map(o=>[o.id,JSON.stringify(strip(t,o))])),now=new Map(S[t].map(o=>[o.id,o]));
   const up=S[t].filter(o=>old.get(o.id)!==JSON.stringify(strip(t,o))).map(o=>strip(t,o));
   const del=[...old.keys()].filter(id=>!now.has(id));
@@ -502,6 +508,7 @@ const can={
  upload:()=>me.role!=='guest',
  delFile:f=>isSA()||f.by===me.id||(f.team&&isLead(f.team)),
  notes:()=>!!me.team||isSA(),
+ pnote:()=>me.role!=='guest',
  meeting:()=>isSA()||me.role==='lead',
  minutes:()=>isSA()||me.role==='lead',
  suggest:()=>me.role!=='guest',
@@ -726,7 +733,7 @@ function calView(){
  ${ev.map(e=>`<div class="ce" style="background:${e.team?TEAMS[e.team].c:'#4a4a52'}" onclick="event.stopPropagation();openEvent(${e.id})" title="${evRange(e)}">${e.h} ${esc(e.t)}</div>`).join('')}
  ${dl.map(t=>`<div class="ce" style="background:var(--card);color:${TEAMS[t.team].c};border:1px solid ${TEAMS[t.team].c}" onclick="event.stopPropagation();openTask(${t.id})">⏱ ${esc(t.t)}</div>`).join('')}</div>`}).join('')}</div>
  ${(()=>{const pre=iso(new Date(y,m,1)).slice(0,7),ev=S.events.filter(e=>e.d.startsWith(pre)).sort((a,b)=>(a.d+a.h).localeCompare(b.d+b.h));
-  return `<div class="evlist"><h3>Eventi del mese</h3>${ev.map(e=>`<div class="evi" onclick="openEvent(${e.id})"><div class="evd"><b>${+e.d.slice(8)}</b><small>${new Date(e.d+'T12:00:00').toLocaleDateString('it-IT',{weekday:'short'})}</small></div><div class="tt"><b>${esc(e.t)}</b><small>${esc(evRange(e))}${e.where?' · '+esc(e.where):''}</small></div>${teamsChips(e)}</div>`).join('')||'<div class="empty" style="padding:14px">Nessun evento questo mese.</div>'}</div>`})()}
+  return `<div class="evlist"><h3>Eventi del mese</h3>${ev.map(e=>`<div class="evi" onclick="openEvent(${e.id})"><div class="evd"><b>${+e.d.slice(8)}</b><small>${new Date(e.d+'T12:00:00').toLocaleDateString('it-IT',{weekday:'short'})}</small></div><div class="tt"><b>${esc(e.t)}</b><small>${esc(evRange(e))}${e.where?' · '+esc(e.where):''}</small>${(()=>{const n=eventNotes(e).length;return n?`<small class="evn">💬 ${n} ${n===1?'nota applicata':'note applicate'}</small>`:''})()}</div>${teamsChips(e)}</div>`).join('')||'<div class="empty" style="padding:14px">Nessun evento questo mese.</div>'}</div>`})()}
  <div class="foot"><span>■ Evento</span><span>□ ⏱ Scadenza task</span><span style="margin-left:auto">${can.event()?'Clicca un giorno per creare un evento':'Solo i team lead e il superadmin possono creare eventi'}</span></div></div>`}
 
 /* ---------- FILE ---------- */
@@ -742,26 +749,43 @@ function filesView(){
 /* ---------- MEETING E ODG ---------- */
 function agendaOf(m){const pts=[...m.fixed.map(x=>({x,team:null,fixed:true}))];
  S.notes.filter(n=>n.mt===m.id&&m.teams.includes(n.team)).forEach(n=>pts.push({x:n.x,team:n.team,by:n.by,id:n.id}));
+ (S.pnotes||[]).filter(n=>m.ev&&n.ev===m.ev&&n.cat==='odg').forEach(n=>pts.push({x:n.x,team:null,by:n.by,id:'p'+n.id,pn:true}));
  return pts}
-function meetView(){
- const myNotes=isSA()?S.notes:S.notes.filter(n=>n.team===me.team);
- const m=S.meetings.find(x=>x.id===selMeeting)||S.meetings[0];
- return header('Meeting','Meeting e ordini del giorno',can.meeting()?`<button class="btn" onclick="modal={type:'meeting'};render()">+ Nuovo meeting</button>`:'')+BODY+`<div class="two">
- <div><div class="card pad" style="margin-bottom:20px"><div style="display:flex;gap:8px;flex-wrap:wrap;margin-bottom:14px">${S.meetings.map(x=>`<button class="btn ${x===m?'':'ghost'} sm" onclick="selMeeting=${x.id};render()">${esc(x.t)}</button>`).join('')}</div>
- ${m?(()=>{const e=S.events.find(ev=>ev.id===m.ev);const ag=agendaOf(m);return `<h3 style="font-size:20px">Ordine del giorno · ${esc(m.t)}</h3>
- <p style="color:var(--muted);margin:4px 0 10px">${e?fmtL(e.d)+' · '+evRange(e)+(e.where?' · '+esc(e.where):''):'Data da definire'}</p>
+const PN_CAT={commento:'Commento',odg:'Punto OdG',decisione:'Decisione',azione:'Da fare'};
+function nextMeeting(){const td=iso(TODAY);return S.meetings.map(m=>({m,e:S.events.find(ev=>ev.id===m.ev)})).filter(o=>o.e&&o.e.d>=td).sort((a,b)=>(a.e.d+(a.e.h||'')).localeCompare(b.e.d+(b.e.h||'')))[0]?.m||null}
+function agendaItem(p,i){return `<li><span class="nr">${i+1}</span><div style="flex:1">${esc(p.x)}<small style="display:block;color:var(--muted);font-size:11px;margin-top:2px">${p.fixed?'Punto fisso':p.pn?'Nota di '+esc(U(p.by).name):'Proposto da '+TEAMS[p.team].name+' · '+esc(U(p.by).name)}</small></div>${p.team?teamChip(p.team):''}</li>`}
+function odgCard(m){if(!m)return `<div class="card pad" style="margin-bottom:20px"><h3 style="font-size:20px">Ordine del giorno · prossima riunione</h3><div class="empty">Nessuna riunione in programma. ${can.meeting()?'Creane una con «+ Nuovo meeting».':''}</div></div>`;
+ const e=S.events.find(ev=>ev.id===m.ev),ag=agendaOf(m);
+ return `<div class="card pad odg" style="margin-bottom:20px"><div class="nl" style="font-size:12.5px;font-weight:600;color:var(--muted)">Prossima riunione in calendario</div><h3 style="font-size:22px;margin:2px 0">${esc(m.t)}</h3>
+ <p style="color:var(--muted);margin:2px 0 10px">${e?fmtL(e.d)+' · '+evRange(e)+(e.where?' · '+esc(e.where):''):'Data da definire'}</p>
  <div style="display:flex;gap:6px;flex-wrap:wrap;margin-bottom:8px">${m.teams.map(teamChip).join('')}</div>
- <ol class="agenda">${ag.map((p,i)=>`<li><span class="nr">${i+1}</span><div style="flex:1">${esc(p.x)}<small style="display:block;color:var(--muted);font-size:11px;margin-top:2px">${p.fixed?'Punto fisso':'Proposto da '+TEAMS[p.team].name+' · '+esc(U(p.by).name)}</small></div>${p.team?teamChip(p.team):''}</li>`).join('')||'<div class="empty">Nessun punto all\'ordine del giorno.</div>'}</ol>
- <div class="actions">${can.meeting()?`<button class="btn ghost sm" onclick="const v=prompt('Nuovo punto fisso');if(v){S.meetings.find(x=>x.id===${m.id}).fixed.push(v);save();render()}">+ Punto fisso</button>`:''}<button class="btn sm" onclick="exportAgenda(${m.id})">Copia OdG</button></div>`})():'<div class="empty">Nessun meeting.</div>'}</div>${m?minutesCard(m)+sugCard(m):''}</div>
- ${can.notes()?`<div class="card pad"><h3>🔒 Note private ${isSA()?'dei team':'del team '+TEAMS[me.team].name}</h3><p style="color:var(--muted);font-size:12px;margin:4px 0 14px">Sono visibili solo al tuo team. Scegli quali proporre all'ordine del giorno di un meeting: solo quelle compaiono agli altri.</p>
- <div style="display:flex;gap:8px;margin-bottom:14px"><input id="nn" placeholder="Nuova nota per il team..."><button class="btn sm" onclick="addNote()">Aggiungi</button></div>
- ${myNotes.map(n=>`<div class="note"><div class="top">${av(U(n.by),n.team,'sm')}${esc(U(n.by).name)} · ${fmt(n.d)} ${isSA()?teamChip(n.team):''}${n.by===me.id||isLead(n.team)||isSA()?`<button class="x-btn" style="margin-left:auto" onclick="S.notes=S.notes.filter(x=>x.id!==${n.id});save();render()">✕</button>`:''}</div>
- <div style="margin-bottom:10px">${esc(n.x)}</div><select onchange="S.notes.find(x=>x.id===${n.id}).mt=this.value?+this.value:null;save();render()"><option value="">🔒 Privata (non in OdG)</option>${S.meetings.filter(x=>x.teams.includes(n.team)).map(x=>`<option value="${x.id}" ${n.mt===x.id?'selected':''}>→ Proponi in OdG: ${esc(x.t)}</option>`).join('')}</select></div>`).join('')||'<div class="empty">Nessuna nota.</div>'}</div>`:''}</div>`}
+ <ol class="agenda">${ag.map(agendaItem).join('')||'<div class="empty">Nessun punto all\'ordine del giorno. Scrivi una nota personale come «Punto OdG» e applicala a questa riunione.</div>'}</ol>
+ <div class="actions">${can.meeting()?`<button class="btn ghost sm" onclick="const v=prompt('Nuovo punto fisso');if(v){S.meetings.find(x=>x.id===${m.id}).fixed.push(v);save();render()}">+ Punto fisso</button>`:''}<button class="btn sm" onclick="exportAgenda(${m.id})">Copia OdG</button></div></div>`}
+function pnEvents(){const td=iso(TODAY),srt=(a,b)=>(a.d+(a.h||'')).localeCompare(b.d+(b.h||''));
+ return {next:S.events.filter(e=>e.d>=td).sort(srt),past:S.events.filter(e=>e.d<td).sort((a,b)=>-srt(a,b)).slice(0,15)}}
+function pnCard(){const {next,past}=pnEvents(),mine=(S.pnotes||[]).filter(n=>n.by===me.id).sort((a,b)=>(b.d+b.id).toString().localeCompare((a.d+a.id).toString()));
+ const opt=e=>`<option value="${e.id}">${esc(e.t)} · ${fmt(e.d)}</option>`;
+ return `<div class="card pad"><h3>🔒 Note personali</h3><p class="hint" style="margin:4px 0 12px">Le vedi solo tu. Classificale e salvale; quando vuoi, applicale a un evento del calendario: da quel momento le leggono tutti nella scheda dell'evento. Le note «Punto OdG» entrano nell'ordine del giorno della riunione collegata.</p>
+ ${CLOUD&&!HAS_PN?`<div class="info">Per le note personali serve la migrazione SQL 009 (db/migrations).${isSA()?' Eseguila nel SQL Editor di Supabase.':' Chiedi al superadmin di eseguirla.'}</div>`:''}
+ <div class="pnc">${Object.entries(PN_CAT).map(([k,l])=>`<button class="${pnCat===k?'on':''}" onclick="pnCat='${k}';render()">${l}</button>`).join('')}</div>
+ <textarea id="pnx" placeholder="Scrivi un appunto…" oninput="pnDraft=this.value">${esc(pnDraft)}</textarea>
+ <div class="actions" style="margin-top:8px"><button class="btn sm pri" onclick="pnSave()">Salva nota</button></div>
+ <div style="margin-top:14px">${mine.map(n=>{const ev=n.ev&&S.events.find(e=>e.id===n.ev);return `<div class="note"><div class="top"><span class="chip ${n.cat==='odg'?'warn':''}">${PN_CAT[n.cat]||'Commento'}</span> ${fmt(n.d)}<button class="x-btn" style="margin-left:auto" aria-label="Elimina nota" onclick="pnDel(${n.id})">✕</button></div>
+ <div style="margin:6px 0 10px;white-space:pre-line">${esc(n.x)}</div>
+ ${ev?`<div class="pnap">Applicata a <b>${esc(ev.t)}</b> · ${fmt(ev.d)} <button class="x-btn" onclick="pnApply(${n.id},'')">Togli</button></div>`:
+ `<select onchange="pnApply(${n.id},this.value)"><option value="">🔒 Privata · applica a un evento…</option>${next.length?`<optgroup label="Prossimi">${next.map(opt).join('')}</optgroup>`:''}${past.length?`<optgroup label="Passati">${past.map(opt).join('')}</optgroup>`:''}</select>`}</div>`}).join('')||'<div class="empty">Nessuna nota personale.</div>'}</div></div>`}
+function meetView(){
+ const nm=nextMeeting(),td=iso(TODAY);
+ const past=S.meetings.filter(x=>{const e=S.events.find(ev=>ev.id===x.ev);return e&&e.d<td}).sort((a,b)=>S.events.find(e=>e.id===b.ev).d.localeCompare(S.events.find(e=>e.id===a.ev).d))[0];
+ const m=S.meetings.find(x=>x.id===selMeeting)||past||nm||S.meetings[0];
+ return header('Meeting','Meeting e ordini del giorno',can.meeting()?`<button class="btn" onclick="modal={type:'meeting'};render()">+ Nuovo meeting</button>`:'')+BODY+odgCard(nm)+`<div class="two">
+ <div>${can.pnote()?pnCard():''}</div>
+ <div><div class="card pad" style="margin-bottom:20px"><h3>🎙 Script delle riunioni</h3><p class="hint" style="margin:4px 0 12px">Scegli la riunione e carica lo script (file di testo, .vtt o .srt) oppure incollalo.</p><div style="display:flex;gap:8px;flex-wrap:wrap">${S.meetings.map(x=>{const e=S.events.find(ev=>ev.id===x.ev);return `<button class="btn ${x===m?'':'ghost'} sm" onclick="selMeeting=${x.id};render()">${esc(x.t)}${e?' · '+fmt(e.d):''}</button>`}).join('')||'<span class="hint">Nessun meeting.</span>'}</div></div>${m?minutesCard(m)+sugCard(m):''}</div></div>`}
 function minutesCard(m){const ed=can.minutes(),txt=minDraft[m.id]!==undefined?minDraft[m.id]:(m.minutes||'');
- return `<div class="card pad" style="margin-bottom:20px"><h3>📝 Appunti della riunione</h3><p class="hint" style="margin:4px 0 12px">Scrivi o incolla gli appunti, anche durante la call. Poi chiedi a Claude di suggerire le task: i suggerimenti non diventano task finché un team lead o il superadmin non li accetta.</p>
+ return `<div class="card pad" style="margin-bottom:20px"><h3>📝 Script · ${esc(m.t)}</h3><p class="hint" style="margin:4px 0 12px">Scrivi o incolla lo script o gli appunti, anche durante la call. Poi chiedi a Claude di suggerire le task: i suggerimenti non diventano task finché un team lead o il superadmin non li accetta.</p>
  ${CLOUD&&!HAS_MIN?`<div class="info">Per salvare gli appunti serve la migrazione SQL 002 (cartella db/migrations). Intanto puoi scriverli e usarli per i suggerimenti.</div>`:''}
  ${ed?`<textarea id="mmin" class="minutes" placeholder="Appunti, decisioni, chi deve fare cosa…" oninput="minInput(${m.id},this.value)">${esc(txt)}</textarea>
- <div class="actions" style="justify-content:space-between;flex-wrap:wrap;margin-top:10px"><label class="btn ghost sm" style="cursor:pointer">↑ Carica file di testo<input type="file" accept=".txt,.md,.text,text/plain" style="display:none" onchange="loadMinutes(${m.id},this)"></label><span id="minst" class="hint"></span><div style="display:flex;gap:8px"><button class="btn ghost sm" onclick="saveMinutes(${m.id})">Salva</button><button class="btn sm" onclick="askClaude(${m.id})">✨ Suggerisci task con Claude</button></div></div>`
+ <div class="actions" style="justify-content:space-between;flex-wrap:wrap;margin-top:10px"><label class="btn ghost sm" style="cursor:pointer">↑ Carica script<input type="file" accept=".txt,.md,.text,.vtt,.srt,text/plain,text/vtt" style="display:none" onchange="loadMinutes(${m.id},this)"></label><span id="minst" class="hint"></span><div style="display:flex;gap:8px"><button class="btn ghost sm" onclick="saveMinutes(${m.id})">Salva</button><button class="btn sm" onclick="askClaude(${m.id})">✨ Suggerisci task con Claude</button></div></div>`
  :`<div class="note-read">${txt?esc(txt):'Nessun appunto.'}</div><p class="hint" style="margin-top:8px">Gli appunti li scrivono i team lead e il superadmin.</p>`}</div>`}
 function sugCard(m){const all=S.suggestions.filter(g=>g.meeting===m.id),pend=all.filter(g=>g.status==='pending'),acc=all.filter(g=>g.status==='accepted').length,dis=all.filter(g=>g.status==='dismissed').length;
  const names=g=>[g.own,...(g.asg||[])].filter(Boolean).map(id=>U(id).name);
@@ -774,6 +798,11 @@ function sugCard(m){const all=S.suggestions.filter(g=>g.meeting===m.id),pend=all
  ${g.why?`<div class="why">“${esc(g.why)}”</div>`:''}
  ${can.accept(g)?`<div class="actions" style="margin-top:10px"><button class="btn ghost sm" onclick="dismissSug(${g.id})">Scarta</button><button class="btn sm" onclick="acceptSug(${g.id})">Rivedi e accetta</button></div>`:`<small style="margin-top:8px">In attesa di ${g.team?'un team lead di '+TEAMS[g.team].name+' o del':'del'} superadmin.</small>`}</div>`).join('')||'<div class="empty" style="padding:14px">Nessuna task in attesa. Scrivi gli appunti e usa «Suggerisci task con Claude».</div>'}
  ${acc||dis?`<p class="hint" style="margin-top:6px">${acc} accettate · ${dis} scartate</p>`:''}</div>`}
+function pnSave(){const v=(document.getElementById('pnx')||{}).value.trim();if(!v)return alert('Scrivi la nota.');if(CLOUD&&!HAS_PN)return alert('Serve la migrazione SQL 009 (cartella db/migrations).');
+ S.pnotes.unshift({id:nid(S.pnotes),by:me.id,x:v.slice(0,4000),cat:PN_CAT[pnCat]?pnCat:'commento',ev:null,d:iso(TODAY)});pnDraft='';save();render()}
+function pnApply(id,ev){const n=S.pnotes.find(x=>x.id===id);if(!n||n.by!==me.id)return;if(ev&&n.ev!==+ev&&!confirm('Applicando la nota all\'evento sarà visibile a tutti i membri. Procedere?')){render();return}n.ev=ev?+ev:null;save();render()}
+function pnDel(id){const n=S.pnotes.find(x=>x.id===id);if(!n||(n.by!==me.id&&!isSA()))return;if(!confirm(n.ev?'Eliminare la nota? Sparirà anche dall\'evento.':'Eliminare la nota?'))return;S.pnotes=S.pnotes.filter(x=>x.id!==id);save();render()}
+function eventNotes(e){return (S.pnotes||[]).filter(n=>n.ev===e.id&&(me.role!=='guest'||n.by===me.id))}
 function addNote(){const v=nn.value.trim();if(!v)return;S.notes.unshift({id:nid(S.notes),team:me.team||'MK',by:me.id,x:v,mt:null,d:iso(TODAY)});save();render()}
 function exportAgenda(id){const m=S.meetings.find(x=>x.id===id),e=S.events.find(ev=>ev.id===m.ev);
  const txt=`ORDINE DEL GIORNO — ${m.t}\n${e?fmtL(e.d)+' ore '+evRange(e)+(e.where?' — '+e.where:''):''}\n\n`+agendaOf(m).map((p,i)=>`${i+1}. ${p.x}${p.team?' ['+TEAMS[p.team].name+']':''}`).join('\n');
@@ -793,7 +822,7 @@ function adminView(){if(!isSA())return header('Amministrazione','Utenti e permes
  <td>${u.id!==me.id?`<button class="x-btn" onclick="delUser('${u.id}')">Elimina</button>`:''}</td></tr>`).join('')}</table></div>
  ${accessCards(Object.keys(TEAMS))}
  <div class="card pad" style="margin-top:20px;overflow:auto"><h3 style="margin-bottom:10px">Matrice permessi</h3><table><tr><th>AZIONE</th><th>OSPITE</th><th>MEMBRO</th><th>TEAM LEAD</th><th>SUPERADMIN</th></tr>
- ${[['Timeline, panoramica, calendario','✓','✓','✓','✓'],['Creare task (proprio team o altri team)','—','✓','✓','✓'],['Assegnare task a persone','—','Solo prendere in carico','Proprio team','Tutte'],['Modificare task','—','Assegnate a sé','Proprio team','Tutte'],['Commentare','—','✓','✓','✓'],['Modificare i propri commenti','—','✓','✓','✓'],['Eliminare commenti','—','Propri','Propri','Tutti'],['Creare eventi calendario','—','—','✓','✓'],['Note private e proposte OdG','—','Proprio team','Proprio team','Tutti'],['Creare meeting e punti fissi','—','—','✓','✓'],['Gestire membri team','—','—','Proprio team','Tutti'],['Aree di lavoro e fogli del team','—','Proprio team + accessi concessi','Tutte le aree','Tutte le aree'],['Concedere accesso a un\'area team','—','—','Proprio team','Tutte le aree'],['Tesoreria (password)','—','Area Partner + password','Con password','Con password'],['Gestire utenti e ruoli','—','—','—','✓']].map(r=>`<tr>${r.map((c,i)=>i?`<td>${c}</td>`:`<td><b>${c}</b></td>`).join('')}</tr>`).join('')}</table></div>`}
+ ${[['Timeline, panoramica, calendario','✓','✓','✓','✓'],['Creare task (proprio team o altri team)','—','✓','✓','✓'],['Assegnare task a persone','—','Solo prendere in carico','Proprio team','Tutte'],['Modificare task','—','Assegnate a sé','Proprio team','Tutte'],['Commentare','—','✓','✓','✓'],['Modificare i propri commenti','—','✓','✓','✓'],['Eliminare commenti','—','Propri','Propri','Tutti'],['Creare eventi calendario','—','—','✓','✓'],['Note personali (le vede solo l\'autore finché non le applica a un evento)','—','✓','✓','✓'],['Creare meeting e punti fissi','—','—','✓','✓'],['Gestire membri team','—','—','Proprio team','Tutti'],['Aree di lavoro e fogli del team','—','Proprio team + accessi concessi','Tutte le aree','Tutte le aree'],['Concedere accesso a un\'area team','—','—','Proprio team','Tutte le aree'],['Tesoreria (password)','—','Area Partner + password','Con password','Con password'],['Gestire utenti e ruoli','—','—','—','✓']].map(r=>`<tr>${r.map((c,i)=>i?`<td>${c}</td>`:`<td><b>${c}</b></td>`).join('')}</tr>`).join('')}</table></div>`}
 
 /* ================= AREE TEAM E FOGLI ================= */
 const STATI_PARTNER=['Da contattare','In trattativa','Confermato','Contratto firmato','Pagato'];
@@ -1189,6 +1218,7 @@ function modalView0(){
    ${peopleL.length?`<div class="li"><div style="flex:1"><small>Persone dedicate</small><b style="font-weight:600">${peopleL.join(', ')}</b></div></div>`:''}
    ${creator?`<div class="li"><div style="flex:1"><small>Creato da</small><b>${esc(creator)}</b></div></div>`:''}
    ${e.desc?`<div class="f" style="margin-top:12px"><label>Descrizione</label><p style="white-space:pre-line;font-size:14px;line-height:1.55">${esc(e.desc)}</p></div>`:''}
+   ${(()=>{const ns=eventNotes(e);return ns.length?`<div class="f" style="margin-top:12px"><label>Note applicate (${ns.length})</label>${ns.map(n=>`<div class="note"><div class="top"><span class="chip ${n.cat==='odg'?'warn':''}">${PN_CAT[n.cat]||'Commento'}</span> ${esc(U(n.by).name)} · ${fmt(n.d)}${n.by===me.id?`<button class="x-btn" style="margin-left:auto" onclick="pnApply(${n.id},'')">Togli</button>`:''}</div><div style="white-space:pre-line;font-size:14px;margin-top:4px">${esc(n.x)}</div></div>`).join('')}</div>`:''})()}
    ${!mine?`<div class="lock">🔒 Solo ${creator?esc(creator)+', che ha creato l\'evento,':'chi ha creato l\'evento'} può modificarlo.</div>`:''}
    ${mtBtn}
    <div class="actions"><button class="btn" onclick="closeM()">Chiudi</button></div>`)}
@@ -1423,7 +1453,7 @@ function saveMinutes(id,auto){const m=S.meetings.find(x=>x.id===id),el=document.
  if((m.minutes||'')!==v){m.minutes=v;save()}
  const st=document.getElementById('minst');if(st)st.textContent='Salvato ✓'}
 function loadMinutes(id,inp){const f=inp.files[0];if(!f)return;if(f.size>2e6)return alert('File troppo grande (max 2 MB). Incolla solo la parte che serve.');
- const rd=new FileReader();rd.onload=()=>{const el=document.getElementById('mmin'),cur=el.value.trim();el.value=(cur?cur+'\n\n':'')+String(rd.result);minInput(id,el.value)};rd.readAsText(f)}
+ const rd=new FileReader();rd.onload=()=>{const el=document.getElementById('mmin'),cur=el.value.trim();let tx=String(rd.result);if(/\.(vtt|srt)$/i.test(f.name))tx=tx.replace(/^WEBVTT.*\n/,'').split(/\r?\n/).filter(l=>!/^\d+$/.test(l.trim())&&!/-->/.test(l)&&!/^(NOTE|STYLE)\b/.test(l)).join('\n').replace(/<[^>]+>/g,'').replace(/\n{3,}/g,'\n\n').trim();el.value=(cur?cur+'\n\n':'')+tx;minInput(id,el.value)};rd.readAsText(f)}
 function buildPrompt(m,notes){const e=S.events.find(ev=>ev.id===m.ev),ag=agendaOf(m);
  const people=S.users.filter(u=>u.role!=='guest'&&u.team).map(u=>`- ${u.id} | ${u.name} | ${TEAMS[u.team].name} (${u.team}) | ${ROLES[u.role].l}`).join('\n')||'- (nessun membro nei team)';
  const tasks=S.tasks.map(t=>`- ${tnum(t)} ${t.t} [${t.team}] owner: ${t.own?U(t.own).name:'da assegnare'} (${t.s} → ${t.e})`).join('\n')||'- (nessuna)';

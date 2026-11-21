@@ -59,3 +59,11 @@ Senza queste variabili l'evento viene salvato normalmente e l'app avvisa che l'e
 - Timeline su mobile senza legenda in fondo.
 - Vista orizzontale: stesso layout mobile (barra compatta al centro, niente sidebar) anche oltre 900 px di larghezza.
 - Area dello stato/notch: sfondo continuo sotto l'orologio (safe-area) e `theme-color` che segue il tema chiaro/scuro.
+
+## Meeting e OdG: note personali, script, prossima riunione
+
+- **Prossima riunione**: in cima alla pagina, l'OdG della prima riunione futura del calendario (punti fissi, proposte dei team, note «Punto OdG»).
+- **Note personali**: le vede solo l'autore. Si scrivono, si classificano (Commento, Punto OdG, Decisione, Da fare) e si salvano; poi si possono **applicare a un evento** del calendario (con conferma): da lì la nota è letta da tutti i membri nella scheda dell'evento e il calendario mostra «N note applicate». L'autore può toglierla dall'evento. Le note «Punto OdG» applicate all'evento di un meeting entrano nel suo ordine del giorno. Gli ospiti non vedono le note applicate.
+- **Script delle riunioni**: scelta della riunione, caricamento di file `.txt/.md/.vtt/.srt` (tempi e numerazione dei sottotitoli vengono rimossi) o testo incollato; resta il pulsante «Suggerisci task con Claude».
+- Migrazione **009** (`db/migrations/009_note_personali.sql`, richiede la 006): tabella `pnotes` con RLS (privata all'autore finché non ha un evento). Senza migrazione l'app avvisa e non salva le note.
+- Le vecchie «note private di team» non sono più mostrate; le proposte già fatte all'OdG restano nell'ordine del giorno.
