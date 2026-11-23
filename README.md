@@ -74,3 +74,7 @@ Senza queste variabili l'evento viene salvato normalmente e l'app avvisa che l'e
   - Superadmin, tre schede: **Utenti** (filtro per ruolo, ricerca, ruolo e team per persona, conferme per Superadmin/Ospite, avviso «Senza team»), **Vista team lead** (esattamente ciò che vede un team lead nel suo team, con selettore del team) e **Matrice permessi**.
   - Team lead: vede solo le card dei propri team (membri, aggiunta/rimozione, accesso all'area ai membri di altri team) e la matrice permessi.
 - **Debug**: filtri per categoria e «Le mie», ricerca nel testo, conferma «Nota salvata», pulsante «Copia aperte» (il superadmin copia l'elenco delle segnalazioni aperte da incollare dove serve). Nessuna nuova migrazione.
+
+
+### Mobile: look "Music"
+Su mobile l'app usa grigio di sistema (chiaro/nero), rosso come accento, titoli grandi, tab bar flottante con etichette e card "prossimo evento" a gradiente rosso. Solo CSS: nessuna migrazione.
